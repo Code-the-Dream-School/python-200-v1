@@ -1,0 +1,13 @@
+Week 2 assignment files generated locally. No remote repository changes were made.
+
+outputs/avg_g3_by_studytime.png	32263 bytes
+outputs/cost_vs_age.png	65480 bytes
+outputs/g3_distribution.png	29876 bytes
+outputs/g3_vs_failures.png	55700 bytes
+outputs/kmeans_clusters.png	56800 bytes
+outputs/predicted_vs_actual.png	54954 bytes
+outputs/project_predicted_vs_actual.png	54954 bytes
+outputs/warmup_predicted_vs_actual.png	48394 bytes
+project_02.py	12622 bytes
+student_performance_math.csv	18124 bytes
+warmup_02.py	6885 bytes
