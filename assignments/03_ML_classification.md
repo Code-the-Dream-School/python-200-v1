@@ -92,7 +92,7 @@ Create a `DecisionTreeClassifier(max_depth=3, random_state=42)`, fit it on the u
 
 ### Logistic Regression Question 1
 
-Train three logistic regression models on the scaled Iris data, identical in every way except for the `C` parameter: `C=0.01`, `C=1.0`, and `C=100`. Use `max_iter=1000` and `solver='liblinear'` for all three. For each model, print the `C` value and the total size of all coefficients using `np.abs(model.coef_).sum()`. Add a comment: what happens to the total coefficient magnitude as `C` increases? What does this tell you about what regularization is doing?
+Train three logistic regression models on the scaled Iris data, identical in every way except for the `C` parameter: `C=0.01`, `C=1.0`, and `C=100`. Use `max_iter=1000` and `solver='liblinear'` for all three. The `LogisticRegression` needs to wrapped with `OneVsRestClassifier` to handle three classes. For each model, print the `C` value and the total size of all coefficients using `np.abs(model.coef_).sum()`. Add a comment: what happens to the total coefficient magnitude as `C` increases? What does this tell you about what regularization is doing?
 
 ## PCA
 
