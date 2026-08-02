@@ -120,14 +120,14 @@ These are all built into scikit-learn! To illustrate how this works, in scikit-l
 
 ```python
 # actual values: 100 people: 30 have covid, 70 do not
-y_true =  [‘covid +’]*30 + [‘covid -’]*70
+y_true =  ['covid +']*30 + ['covid -']*70
 # predicted values:
 # for positive cases: predictions: 24 tp, 6 fn
 # for negative cases: predictions 10 fp, 60 tn
-y_pred =  [‘covid +’]*24 + [‘covid -’]*6 + [‘covid +’]*10 + [‘covid -’]*60
+y_pred =  ['covid +']*24 + ['covid -']*6 + ['covid +']*10 + ['covid -']*60
 ```
 
-Then, let’s import the metrics that we need from scikit-learn:
+Then, let's import the metrics that we need from scikit-learn:
 
 ```python
 import matplotlib.pyplot as plt
@@ -140,8 +140,8 @@ from sklearn.metrics import classification_report
 In scikit learn, the actual and predicted outputs (y values) are used to evaluate classifier output. For instance, to create the confusion matrix from our synthetic Covid data:
 
 ```python
-labels = [‘covid +’, ‘covid -’]
-positive_label = ‘covid +’
+labels = ['covid +', 'covid -']
+positive_label = 'covid +'
 cm = confusion_matrix(y_true, y_pred, labels=labels)
 print(cm)
 ```
@@ -179,21 +179,21 @@ print("F1 score (covid+):", f1)
 ```
 This will print out the same values we calculated by hand above! We already understand what these numbers mean. Now scikit-learn just saves us the arithmetic.
 
-We are leaving one important detail out: we have only calculated precision, recall, and F1 for the `covid+` case. We’ll get to that last piece of the classification evaluation puzzle next.
+We are leaving one important detail out: we have only calculated precision, recall, and F1 for the `covid+` case. We'll get to that last piece of the classification evaluation puzzle next.
 
 ## Multi-Class Classification: The Final Piece of the Puzzle
 So far, to simplify our analysis, we have focused only on *one* category in our example: `covid +`, and evaluated how our classifier did on that one category. However, as we saw last week, most machine learning classifiers have multiple categories, for instance, they might be shown a picture and classify what type of animal it is (out of hundreds), or what digit it is (out of ten).
 
 With *multiple categories* instead of calculating precision/recall/F1 for just one label, you calculate *all the metrics for each category*.
 
-This creates a natural question: How do we summarize the classifier’s performance across *all* classes? The answer is that you take an average. There are two standard ways this is done in scikit-learn. One, the *macro average*, in which each class contributes equally to the mean, no matter how many examples it has. Secondly, the *weighted average*, in which classes with more data count more heavily toward the average.
+This creates a natural question: How do we summarize the classifier's performance across *all* classes? The answer is that you take an average. There are two standard ways this is done in scikit-learn. One, the *macro average*, in which each class contributes equally to the mean, no matter how many examples it has. Secondly, the *weighted average*, in which classes with more data count more heavily toward the average.
 
 In other words, in multi-class classification, you end up with *multiple* precision/recall/F1 scores (one for each category), so you need to average them to get a single summary of classifier performance.
 
 ### Back to Covid: The classification report
 Technically, even our Covid test has two classes (`covid +` and `covid -`). To simplify, we only focused on `covid +`. However, `covid -` is also important: we could ask of everyone who is covid negative, how likely is the test to correctly identify them? This would be a *recall* measure for the `covid -` category (which could be calculated by looking along the bottom row of our confusion matrix).
 
-To get a full summary of a classifier’s performance, for each category, and an average score across all categories, scikit-learn produces what is known as a `classification_report`. For our example:
+To get a full summary of a classifier's performance, for each category, and an average score across all categories, scikit-learn produces what is known as a `classification_report`. For our example:
 
 ```python
 print(classification_report(y_true, y_pred))
