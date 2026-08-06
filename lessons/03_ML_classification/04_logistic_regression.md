@@ -513,7 +513,7 @@ print(classification_report(y_test, y_pred))
 
 Each metric tells a slightly different story about model performance, especially in a spam-detection problem where false positives and false negatives have different costs.
 
-![Output](resources/output.png)
+![Output](resources/Output.png)
 
 We'll start with the confusion matrix: Out of all non-spam emails (class 0), the model correctly identified 530 emails as not spam, but 28 non-spam emails were mistakenly flagged as spam. For spam emails (class 1), the model correctly detected 326 spam messages, while 37 spam emails slipped through and were predicted as non-spam. This tells us the model is strong overall, but like any real system, it still makes a small number of mistakes in both directions.
 
