@@ -26,9 +26,7 @@ By the end of this lesson, you will be able to:
 
 Cloud computing means renting computing infrastructure from a provider rather than owning it. The three dominant providers -- Amazon Web Services (AWS), Google Cloud Platform (GCP), and Microsoft Azure -- each operate a global network of data centers: physical facilities packed with servers, storage hardware, and networking equipment. When you spin up a virtual machine or upload a file to cloud storage, you're using hardware in one of these facilities, somewhere in the world. Providers organize their infrastructure into *regions* -- named geographic locations like “US East” or “West Europe” -- and you'll choose a region whenever you create a cloud resource.
 
-All three providers offer largely the same catalog of services, just under different names. The diagram below maps equivalent services across AWS, GCP, and Azure -- don't try to memorize it. Just notice that the categories are consistent: storage, compute, databases, networking, machine learning, and so on. In this course we use Azure for hands-on work, but the concepts transfer directly to the other platforms.
-
-Don’t worry about memorizing every service name or acronym yet. The important thing at this stage is recognizing the broad categories and patterns: compute, storage, databases, networking, machine learning, and so on. Every cloud provider has slightly different names, but the underlying ideas are very similar.
+All three providers offer largely the same catalog of services, just under different names. The diagram below maps equivalent services across AWS, GCP, and Azure. No need to memorize the diagram, just notice that the categories are consistent: storage, compute, databases, networking, machine learning, and so on.
 
 ![Cloud Services Overview](resources/cloud_services_overview.png)
 
