@@ -208,8 +208,9 @@ print(f"KNN (k=5) AUC:           {knn_auc:.3f}")
 
 # Overlay both curves
 fig, ax = plt.subplots(figsize=(6, 5))
-RocCurveDisplay(fpr=fpr,                            tpr=tpr).plot(ax=ax, name=f"Logistic Regression (AUC={auc:.2f})")
-RocCurveDisplay(fpr=*roc_curve(y_test, knn_probs)[:2]).plot(ax=ax, name=f"KNN k=5 (AUC={knn_auc:.2f})")
+RocCurveDisplay(fpr=fpr, tpr=tpr).plot(ax=ax, name=f"Logistic Regression (AUC={auc:.2f})")
+knn_fpr, knn_tpr, _ = roc_curve(y_test, knn_probs)
+RocCurveDisplay(fpr=knn_fpr, tpr=knn_tpr).plot(ax=ax, name=f"KNN k=5 (AUC={knn_auc:.2f})")
 ax.plot([0, 1], [0, 1], linestyle="--", color="gray", label="Random")
 ax.set_title("ROC Comparison — Weather Classifier")
 ax.legend()
