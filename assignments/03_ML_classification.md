@@ -173,7 +173,18 @@ Put all code in `project_03.py` and save any figures to `outputs/`.
 
 ### Task 1.1
 
-Load the Spambase dataset, following the same loading approach used in the logistic regression lesson.
+Load the Spambase dataset. Use exactly as written:
+ 
+```python
+url = "https://archive.ics.uci.edu/ml/machine-learning-databases/spambase/spambase.data"
+response = requests.get(url)
+response.raise_for_status()
+ 
+df = pd.read_csv(BytesIO(response.content), header=None)
+df.columns = COLUMN_NAMES  # see the logistic regression lesson for the full column list
+```
+ 
+`COLUMN_NAMES` is the 58-item list from the [logistic regression lesson](https://github.com/Code-the-Dream-School/python-200/blob/75ba1ca1b7ed0156605d7e3ab94b30fdce9105c0/lessons/03_classification/04_logistic_regression.md#loading-the-dataset) -- copy it into your file rather than retyping it. The last column, `spam_label`, is your target (1 = spam, 0 = not spam).
 
 ### Task 1.2
 
