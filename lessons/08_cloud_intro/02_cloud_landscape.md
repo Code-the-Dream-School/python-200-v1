@@ -66,6 +66,8 @@ When you encounter a new cloud provider, it helps to know what categories of ser
 
 Most projects don't use one provider for everything. A common pattern: GCP BigQuery for analytics, Supabase for the application database, Cloudflare for edge compute, OpenAI directly for LLM access. Knowing the service taxonomy helps you read job descriptions, evaluate architectural decisions, and ask good questions when you join a new team.
 
+The serverless services you'll deploy to in this class's practicum are Lambda, EventBridge, IAM, CloudWatch, and Parameter Store.
+
 ## What Comes Next
 
 Weeks 9–11 are hands-on with Supabase. By the end of week 11, you'll have a complete ETL pipeline that:
