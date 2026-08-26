@@ -55,6 +55,8 @@ print(f"Records to classify: {len(to_classify)} (skipping {len(already_done)} al
 
 On the first run, `already_done` is empty and all 365 records will be classified. On subsequent runs, only records not yet in `weather_enriched` will be processed. This is the incremental load pattern — the pipeline advances forward without redoing completed work.
 
+This is the difference between a one-time backfill and a repeated incremental run. It's why, in the cloud, a scheduled job can process only new data cheaply.
+
 ## Building the Feature DataFrame
 
 The saved Pipeline expects input as a DataFrame with columns in a specific order — the same order the model was trained on. Load that order from the metadata file:
