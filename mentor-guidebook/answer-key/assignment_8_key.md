@@ -48,10 +48,8 @@ Managed data platform (Databricks/Snowflake) = a fully-managed analytics/data sy
 - Give up: some control, flexibility, and cost (markup over raw infra), plus potential vendor lock-in.
 
 ### Cloud Concepts Q5 — **Subjective** (check against lesson)
-The lesson names two situations where cloud isn't the right choice. Standard answers:
-- **Steady, predictable, always-on workloads** where owning hardware is cheaper long-term than renting.
-- **Strict regulatory / data-sovereignty / ultra-low-latency or full-hardware-control needs** that the cloud can't meet.
-Accept the two the lesson actually lists — verify against the student's lesson if their pair differs.
+The lesson names a situation where cloud isn't the right choice.
+- From the lesson: If your dataset fits comfortably on a single machine and you do not have massive compute demands, local processing is often faster and cheaper. This is often the best approach when setting up an initial prototype.
 
 ---
 
