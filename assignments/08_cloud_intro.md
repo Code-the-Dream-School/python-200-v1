@@ -55,7 +55,7 @@ What is a managed data platform like Databricks or Snowflake, and how does it di
 
 ### Cloud Concepts Question 5
 
-The lesson names two situations where the cloud is probably not the right choice. What are they?
+The lesson a situation where the cloud is probably not the right choice. What is that situation?
 
 ---
 
