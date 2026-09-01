@@ -19,14 +19,6 @@ In your `python200-homework` repository, create a folder called `assignments_03/
 
 When finished, commit and open a PR as described in the [assignments README](https://github.com/Code-the-Dream-School/python-200/blob/75ba1ca1b7ed0156605d7e3ab94b30fdce9105c0/assignments/README.md).
 
-**Required Tasks:**
-* Warmup Tasks: 1.1, 1.2, 2.1, 2.2, 2.3, 2.4, 3.1, 4.1, 5.1, 6.1, 6.2, 6.3, 6.4
-* Mini-Project: 1.1, 1.2, 1.3, 1.4, 2.1, 2.2, 2.3, 3.1, 3.2, 3.3, 3.4, 4.1, 5.1, 6.1
-
-**Optional Tasks:**
-* Warmup Tasks: None this week.
-* Mini-Project: 5.2
-
 # Part 1: Warmup Exercises
 
 Put all warmup exercises in a single file: `warmup_03.py`. Use comments to mark each section and question (e.g. `# --- Preprocessing ---` and `# Q1`). Use `print()` to display all outputs.
