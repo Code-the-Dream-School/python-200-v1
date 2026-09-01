@@ -30,6 +30,8 @@ Note it is very helpful for your mentors if you write your thoughts/comments in 
 # Part 1: Warmup Exercises
 Put all warmup exercises  in a single file: `warmup_01.py`. Use comments to mark each section and question (e.g. `# --- Pandas ---` and `# Pandas Q1`). Use `print()` to display all outputs. 
 
+> **About the code blocks below:** Where a question gives you data (a DataFrame, an array, a list), use it **exactly as written** — these are the inputs to work from, not placeholder values to swap for your own. Several later questions reuse the data defined in an earlier one.
+
 ## Pandas Review
 
 ### Pandas Question 1
@@ -380,11 +382,7 @@ Load data from all ten yearly CSV files into a single DataFrame. Your implementa
 
 You discovered some quirks when you inspected the raw files. Make sure you account for those when calling `pd.read_csv()`. There is also something missing from each file that you will need to add before merging: each row needs to know which year it came from. Think about where to add that information.
 
-After loading and merging, save the combined dataset to:
-
-```
-assignments_01/outputs/merged_happiness.csv
-```
+After loading and merging, save the combined dataset as a CSV so it persists as an output of the pipeline. A sensible default location is `assignments_01/outputs/merged_happiness.csv`, but the exact path and filename are up to you — what matters is that the merged data is written out and that later tasks in the flow use that same merged DataFrame.
 
 Add `retries=3, retry_delay_seconds=2` to this task's decorator. File I/O is exactly the kind of operation that can fail intermittently in production pipelines, and this is where retries earn their keep.
 
@@ -414,7 +412,7 @@ The pandemic began in early 2020. Did it affect global happiness scores? Test th
 
 Log the t-statistic, p-value, the mean happiness for each group, and a plain-language interpretation of the result at alpha = 0.05. Your interpretation should say something meaningful -- not just "we reject the null hypothesis" but what that actually means in terms of this data.
 
-Add a second test of your choice (for example, comparing two specific regions that you expect to differ based on the descriptive statistics you computed earlier).
+**(Optional)** Add a second test of your choice (for example, comparing two specific regions that you expect to differ based on the descriptive statistics you computed earlier). The pre/post-2020 t-test above is the required part of this task; this second test is encouraged extra practice.
 
 
 ### Task 5: Correlation and Multiple Comparisons
@@ -461,6 +459,51 @@ The full pipeline should be runnable with:
 python project_01.py
 ```
 
-When you run it, it should execute all tasks in order, produce all outputs, and save them to the specified locations. You should be able to run the file multiple times without errors -- each run should overwrite the previous outputs cleanly.
+When you run it, it should execute all tasks in order, produce all outputs, and save them to the locations you chose. You should be able to run the file multiple times without errors -- each run should overwrite the previous outputs cleanly.
 
 Once you have it working, try running `prefect server start` in a separate terminal, then re-run the pipeline and explore the logs and task states in the Prefect dashboard. You'll see exactly what the lesson described.
+
+---
+
+<details>
+<summary>Rubric (for AirHub reviewer and mentors)</summary>
+
+### Deliverables
+
+Three files: `warmup_01.py`, `prefect_warmup.py`, and `project_01.py`.
+
+- **`warmup_01.py`** — all Part 1 warmup exercises, each labeled by a comment, each printing its output:
+  - Pandas Q1–Q7, NumPy Q1–Q6, Matplotlib Q1–Q4 (plots displayed/saved), Descriptive Stats Q1–Q5 (including the two written-answer comments in Q4 and Q5), Hypothesis Q1–Q6 (Q6 is a plain-language `print()` conclusion), Correlation Q1–Q5.
+  - Pipeline Q1: `create_series`, `clean_data`, `summarize_data`, and `data_pipeline` functions, with the summary dict printed key by key.
+- **`prefect_warmup.py`** — Pipeline Q2: the three functions as `@task`, `data_pipeline` as a `@flow`, the `if __name__ == "__main__"` block, and the two written answers in a comment block.
+- **`project_01.py`** — the World Happiness pipeline: one `@flow` calling Tasks 1–6 as `@task`s, using `get_run_logger()` (not `print()`), runnable with `python project_01.py`.
+  - Task 1: load all 10 yearly CSVs in a loop (no per-year copy/paste), add a year column, merge, and write the merged CSV out as an output.
+  - Task 2: log mean/median/std of `happiness_score`, plus mean by year and by region.
+  - Task 3: save four plots — a happiness histogram, a boxplot by year, a GDP-vs-happiness scatter, and a correlation heatmap (`annot=True`).
+  - Task 4: independent-samples t-test 2019 vs 2020, logging t-stat, p-value, group means, and a plain-language interpretation at alpha = 0.05.
+  - Task 5: Pearson correlation of each numeric variable with happiness score, plus a Bonferroni-corrected significance check.
+  - Task 6: a human-readable summary logging country/year counts, top-3 and bottom-3 regions, the pre/post-2020 result in plain language, and the strongest correlate after correction.
+
+### Required vs optional
+
+**Required:** all three files and every item listed above under Deliverables, including Project Tasks 1–6.
+
+**Optional:**
+- Task 4's **second t-test** of the student's choice (the 2019-vs-2020 test is required; the second is extra practice).
+- Running `prefect server start` to view the dashboard (a "try this" exploration, not a graded deliverable).
+
+### Strict vs lenient (grading guidance for AirHub)
+
+**Be strict about:**
+- The three files existing with the functions/tasks named above present.
+- Project Task 3 producing four distinct saved plot files (histogram, by-year boxplot, GDP scatter, correlation heatmap).
+- `project_01.py` using `get_run_logger()` rather than `print()`, and structuring the work as `@task`s inside one `@flow`.
+- Warmup data being used as given where a question supplies it.
+
+**Be lenient about (do not fail on):**
+- **File paths and directory layout.** The `assignments_01/` folder, the `outputs/` subfolder, and the exact merged-CSV path/filename are suggested conventions — the reviewer cannot see the student's filesystem, so do not fail on a path that differs from the examples. What matters is that the merged data is written out and reused within the flow.
+- Exact plot **filenames** — the four required plots must exist, but their names need not match the examples verbatim.
+- The student's **choice of second t-test** and which regions they compare.
+- Cosmetic details of plots (styling, bin counts, colors) beyond the required titles/labels/content.
+
+</details>
