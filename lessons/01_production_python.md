@@ -32,7 +32,3 @@ A test is a small program that runs your code and asserts that something is true
 
 5. [Modules and Project Structure](05_modules.md)
 How to turn a single script into a package. Covers modules, imports, the `if __name__ == "__main__"` guard, and a project layout that separates library code from the scripts that use it and the tests that check it.
-
-## Week 1 Assignments
-
-Once you finish the lessons, head on over to the [assignments](../../assignments/README.md) to get more hands-on practice with the material.
