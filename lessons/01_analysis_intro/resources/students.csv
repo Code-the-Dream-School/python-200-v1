@@ -1,7 +1,0 @@
-id,name,age,grade,city,score
-1,Alice,25.0,A,New York,85.0
-2,Bob,30.0,B,Chicago,90.0
-3,Carol,,A,Los Angeles,95.0
-4,David,28.0,C,,78.0
-5,Eva,22.0,B,Houston,
-6,Frank,35.0,,Boston,88.0
