@@ -1,34 +1,38 @@
-# Week 1: Introduction to Analysis
-Welcome to the first week of Python 200! This week we will lay the groundwork for the rest of the course. We'll review core concepts from Python 100, explore basic ideas from probability and statistics, and end with reproducible analysis utilities using pipelines.
+# Week 1: Production Python
 
-> For an introduction to the course as a whole, and a discussion of how to set up your environment, please see the [Welcome](https://github.com/Code-the-Dream-School/python-200/blob/e072675df8c08073483cf708d18e28916635a203/README.md) page. 
+Welcome to Python 200! By the end of this course you will have built an AI-enabled data pipeline running in the cloud: it pulls data from a live API, runs it through a machine learning model and a large language model, and writes the results to a cloud database on a schedule.
+
+This week is about the Python skills that make that possible. You already know how to load a CSV file and plot it, because that was covered in Python for Data Analysis and we assume it here. What you have probably not done yet is package your code so that someone else can import it, describe your data so that invalid input fails immediately instead of silently, or write a test that catches a mistake before it reaches production.
+
+Those are the skills that separate a notebook from a working system, and the rest of this course depends on them. Weeks 2 and 3 build a machine learning model. Week 4 turns that model into a reusable component using everything below. Weeks 9 through 11 connect it to a cloud pipeline.
+
+By the end of this week you will be able to:
+
+- Define classes with attributes and methods, and use objects to bundle data with the behavior that belongs to it
+- Use `dataclasses`, type hints, and docstrings to write code that documents itself
+- Define and validate data schemas at your program's boundaries with Pydantic
+- Write `pytest` tests that check both the success path and the failure path
+- Split a script into importable modules and a package with a test suite
+
+> For an introduction to the course as a whole, and a discussion of how to set up your environment, please see the [Welcome](../README.md) page.
 
 ## Topics
 
-### Python 100 Review
-We are covering some of the main Python packages from Python 100, but in a new context. If you are already comfortable with these libraries, this will be a quick refresher. If it has been a while since you used them, this will be a good opportunity to get back up to speed. Note we are assuming you remember many basics of the Python standard library. 
+1. [Classes and Objects](01_classes.md)
+Dictionaries are a reasonable way to hold data until a program grows. This lesson shows where they become inadequate, then introduces classes, which combine data with the operations that belong to it using `__init__`, attributes, methods, and `self`.
 
-Also, we will not be reviewing SQL this week: we are holding off on reviewing SQL until we use it more in week 6 when we build AI pipelines that interact with databases. 
+2. [Dataclasses, Type Hints, and Docstrings](02_dataclasses_and_types.md)
+Most of the classes you write contain mainly data. The `dataclasses` module removes the repetitive code. Type hints state what a function expects and returns, and docstrings state what those values mean. Together they let your editor, your teammates, and you read your code without running it.
 
-1. [Pandas](https://github.com/Code-the-Dream-School/python-200/blob/main/lessons/01_analysis_intro/01_pandas.md)
-A review of the core Pandas skills from Python 100: loading datasets, exploring DataFrames, filtering, grouping, and summarizing. If it has been a while, this lesson will bring everything back quickly.
+3. [Validating Data at the Boundary](03_pydantic.md)
+Type hints are documentation rather than enforcement. When data arrives from outside your program, such as from an API, a CSV file, or a form, you need something that actually checks it. Pydantic turns a schema into a validator, so invalid data fails at the edge of your system instead of several steps later.
 
-2. [NumPy](https://github.com/Code-the-Dream-School/python-200/blob/main/lessons/01_analysis_intro/02_numpy.md)
-NumPy is the numerical foundation underlying nearly every data science library you'll use in this course. We'll revisit arrays and vectorized operations, and develop a clearer picture of how NumPy relates to pandas, scikit-learn, and PyTorch.
+4. [Testing with pytest](04_pytest.md)
+A test is a small program that runs your code and asserts that something is true about the result. This lesson covers writing test functions, asserting on values, confirming that errors are raised when they should be, and reading pytest output when something fails.
 
-3. [Matplotlib](https://github.com/Code-the-Dream-School/python-200/blob/main/lessons/01_analysis_intro/03_matplotlib.md)
-Visualization is not just a presentation tool — it's an analytical one. We'll review core Matplotlib patterns and reinforce the habit of looking at your data before drawing conclusions from it.
+5. [Modules and Project Structure](05_modules.md)
+How to turn a single script into a package. Covers modules, imports, the `if __name__ == "__main__"` guard, and a project layout that separates library code from the scripts that use it and the tests that check it.
 
-### New material
-4. [Describing data](https://github.com/Code-the-Dream-School/python-200/blob/main/lessons/01_analysis_intro/04_describing_data.md)
-Before you can reason about patterns in data, you need tools to describe it: measures of central tendency, spread, and shape. We'll work through these ideas visually, using histograms and boxplots to build intuition.
+## Week 1 Assignments
 
-5. [Hypothesis Testing](https://github.com/Code-the-Dream-School/python-200/blob/main/lessons/01_analysis_intro/05_hypothesis_testing.md)
-Intuition is a good starting point, but it's not evidence. This lesson covers the foundations of statistical hypothesis testing — what a p-value actually measures, and how to interpret it when you need to make a defensible claim from data.
-
-6. [Correlation](https://github.com/Code-the-Dream-School/python-200/blob/main/lessons/01_analysis_intro/06_correlation.md)
-What does it mean for two variables to be related? We'll look at Pearson correlation in detail.
-
-7. [Pipelines](https://github.com/Code-the-Dream-School/python-200/blob/main/lessons/01_analysis_intro/07_pipelines.md)
-Once your analysis works, you'll want to run it again reliably — on new data, on a schedule, or in the cloud. This lesson introduces data pipelines with Prefect.
-
+Once you finish the lessons, head on over to the [assignments](../../assignments/README.md) to get more hands-on practice with the material.
