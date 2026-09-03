@@ -1,43 +1,51 @@
 # Week 2 Assignments
 
-This week's assignments cover the week 2 material, including:
+This week's assignments cover the Week 2 material:
 
-- The scikit-learn API
+- The scikit-learn `create → fit → predict` API
 - Linear regression: fitting, evaluating, and interpreting models
 - Train/test splits and generalization
 - Multiple regression with numeric and binary features
 
-As with week 1, the warmup exercises are meant to build muscle memory for the core mechanics -- try to work through them without AI assistance. The mini-project will ask you to apply these tools in a more open-ended context.
+As with Week 1, the warmup exercises are meant to build muscle memory for the core mechanics, so try to work through them without AI assistance. The mini-project applies these tools to real weather data in a more open-ended way. It uses the same daily weather that you will build a classifier from in Week 3.
+
+---
 
 # Submission Instructions
 
-In your `python200-homework` repository, create a folder called `assignments_02/`. Inside that folder, create two files and an outputs directory:
+In your `python200-homework` repository, create a folder called `assignments_02/`. Inside it, create two files and an outputs directory:
 
-1. `warmup_02.py`  : for the warmup exercises
-2. `project_02.py` : for the mini-project
-3. `outputs/`      : for any plots or data files your code generates
+1. `warmup_02.py` — for the warmup exercises
+2. `project_02.py` — for the mini-project
+3. `outputs/` — for any plots or data files your code generates
 
-When finished, commit and open a PR as described in the [assignments README](https://github.com/Code-the-Dream-School/python-200/blob/aefd628a793f4079f642602116b28dba93d514c4/assignments/README.md).
+When finished, commit and open a PR as described in the [assignments README](README.md).
+
+**Primary submission**: A link to your open GitHub PR.
+
+---
 
 # Part 1: Warmup Exercises
 
-Put all warmup exercises in a single file: `warmup_02.py`. Use comments to mark each section and question (e.g. `# --- scikit-learn API ---` and `# Q1`). Use `print()` to display all outputs.
+Put all warmup exercises in a single file: `warmup_02.py`. Use comments to mark each section and question (for example `# --- scikit-learn API ---` and `# Q1`). Use `print()` to display all outputs.
 
 ## The scikit-learn API
 
 ### scikit-learn Question 1
 
-The core pattern in scikit-learn is `create → fit → predict`. Practice it here with a simple dataset: years of work experience versus annual salary.
+The core pattern in scikit-learn is `create → fit → predict`. Practice it here with a small weather example: a day's low temperature versus its high temperature.
+
+Use exactly as written:
 
 ```python
 import numpy as np
 from sklearn.linear_model import LinearRegression
 
-years  = np.array([1, 2, 3, 5, 7, 10]).reshape(-1, 1)
-salary = np.array([45000, 50000, 60000, 75000, 90000, 120000])
+temp_min = np.array([1, 4, 8, 12, 16, 20]).reshape(-1, 1)
+temp_max = np.array([8, 10, 15, 18, 23, 27])
 ```
 
-Create a `LinearRegression` model, fit it to this data, and then predict the salary for someone with 4 years of experience and someone with 8 years. Print the slope (`model.coef_[0]`), the intercept (`model.intercept_`), and the two predictions. Label each printed value.
+Create a `LinearRegression` model, fit it to this data, and then predict the high for a day with a low of 6 degrees and a day with a low of 18 degrees. Print the slope (`model.coef_[0]`), the intercept (`model.intercept_`), and the two predictions. Label each printed value.
 
 ### scikit-learn Question 2
 
@@ -47,258 +55,222 @@ scikit-learn requires the feature array `X` to be 2D even when you only have one
 x = np.array([10, 20, 30, 40, 50])
 ```
 
-Print its shape. Use `.reshape()` to convert it to a 2D array and print the new shape. Add a comment explaining, in your own words, why scikit-learn needs `X` to be 2D.
-
-### scikit-learn Question 3
-
-K-Means is an unsupervised algorithm that follows the same `create → fit → predict` pattern as everything else in scikit-learn. Use the code below to generate a synthetic dataset with three natural clusters:
-
-```python
-from sklearn.cluster import KMeans
-from sklearn.datasets import make_blobs
-import matplotlib.pyplot as plt
-
-X_clusters, _ = make_blobs(n_samples=120, centers=3, cluster_std=0.8, random_state=7)
-```
-
-Create a `KMeans` model with `n_clusters=3` and `random_state=42`, fit it to `X_clusters`, and predict a cluster label for each point. Print the cluster centers (`kmeans.cluster_centers_`) and how many points fell into each cluster using `np.bincount(labels)`.
-
-Then create a scatter plot coloring each point by its cluster label, plot the cluster centers as black X's, add a title and axis labels. Save the figure to `outputs/kmeans_clusters.png`.
+Print its shape. Use `.reshape(-1, 1)` to convert it to a 2D array and print the new shape. Add a comment explaining, in your own words, why scikit-learn needs `X` to be 2D.
 
 ## Linear Regression
 
-The questions below all use the same synthetic medical costs dataset: 100 patients, each with an age (20 to 65), a smoker flag (0 = non-smoker, 1 = smoker), and an annual medical cost as the target. Generate it once and reuse the variables throughout.
+The questions below all use the same small synthetic weather dataset: 120 days, each with a low temperature, a rain flag (0 = dry, 1 = rainy), and a high temperature as the target. Generate it once and reuse the variables throughout.
+
+Use exactly as written:
 
 ```python
-import os
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import train_test_split
+from sklearn.metrics import mean_squared_error, r2_score
 
-np.random.seed(42)
-num_patients = 100
-age    = np.random.randint(20, 65, num_patients).astype(float)
-smoker = np.random.randint(0, 2, num_patients).astype(float)
-cost   = 200 * age + 15000 * smoker + np.random.normal(0, 3000, num_patients)
+rng = np.random.default_rng(42)
+num_days  = 120
+temp_min  = rng.uniform(-5, 22, num_days)
+is_rainy  = rng.integers(0, 2, num_days).astype(float)
+temp_max  = 1.0 * temp_min + 6 - 4 * is_rainy + rng.normal(0, 2, num_days)
 ```
 
 ### Linear Regression Question 1
 
-Before fitting anything, look at the data. Create a scatter plot of `age` on the x-axis and `cost` on the y-axis. Color the points by smoker status by passing `c=smoker` and `cmap="coolwarm"` to `plt.scatter()`. Add a title `"Medical Cost vs Age"`, label both axes, and save to `outputs/cost_vs_age.png`.
+Before fitting anything, look at the data. Create a scatter plot of `temp_min` on the x-axis and `temp_max` on the y-axis. Color the points by rain status by passing `c=is_rainy` and `cmap="coolwarm"` to `plt.scatter()`. Add the title `"Daily High vs Low"`, label both axes, and save to `outputs/high_vs_low.png`.
 
-Add a comment describing what you see. Are there two distinct groups visible? What does that suggest about the `smoker` variable?
+Add a comment describing what you see. Are there two visible groups? What does that suggest about the `is_rainy` variable?
 
 ### Linear Regression Question 2
 
-Split the data into training and test sets using `age` as the only feature, an 80/20 split, and `random_state=42`. Reshape `age` to a 2D array before using it as `X`. Print the shapes of all four arrays.
+Split the data into training and test sets using `temp_min` as the only feature, an 80/20 split, and `random_state=42`. Reshape `temp_min` to a 2D array before using it as `X`. Print the shapes of all four arrays.
 
 ### Linear Regression Question 3
 
 Fit a `LinearRegression` model to your training data from Question 2. Print the slope and intercept. Then predict on the test set and print:
 
-- RMSE: `np.sqrt(np.mean((y_pred - y_test) ** 2))`
+- RMSE: `np.sqrt(mean_squared_error(y_test, y_pred))`
 - R² on the test set: `model.score(X_test, y_test)`
 
-Add a comment interpreting the slope in plain English -- what does it mean for medical costs?
+Add a comment interpreting the slope in plain English. What does it mean for the daily high?
 
 ### Linear Regression Question 4
 
-Now add `smoker` as a second feature and fit a new model.
+Now add `is_rainy` as a second feature and fit a new model.
 
 ```python
-X_full = np.column_stack([age, smoker])
+X_full = np.column_stack([temp_min, is_rainy])
 ```
 
-Split, fit, and print the test R². Compare it to the R² from Question 3 -- does adding the smoker flag help? Print both coefficients:
+Split (80/20, `random_state=42`), fit, and print the test R². Compare it to the R² from Question 3. Does adding the rain flag help? Print both coefficients:
 
 ```python
-print("age coefficient:    ", model_full.coef_[0])
-print("smoker coefficient: ", model_full.coef_[1])
+print("temp_min coefficient:", model_full.coef_[0])
+print("is_rainy coefficient:", model_full.coef_[1])
 ```
 
-Add a comment interpreting the `smoker` coefficient: what does it represent in practical terms?
+Add a comment interpreting the `is_rainy` coefficient. What does it represent in practical terms?
 
 ### Linear Regression Question 5
 
-A *predicted vs actual plot* is a standard tool for evaluating regression models. Each test observation becomes a dot: the model's prediction goes on the x-axis, the true value goes on the y-axis. A perfect model would place every point on the diagonal line where predicted equals actual.
+A *predicted vs actual plot* is a standard tool for evaluating regression models. Each test observation becomes a dot: the model's prediction goes on the x-axis, and the true value goes on the y-axis. A perfect model would place every point on the diagonal line where predicted equals actual.
 
-Using the two-feature model from Linear Regression Question 4, create this plot for the test set. Add a diagonal reference line, a title `"Predicted vs Actual"`, labeled axes, and save to `outputs/predicted_vs_actual_cost.png`.
+Using the two-feature model from Question 4, create this plot for the test set. Add a diagonal reference line, the title `"Predicted vs Actual"`, labeled axes, and save to `outputs/predicted_vs_actual_warmup.png`.
 
 Add a comment: what does it mean when a point falls above the diagonal? What about below?
 
-# Part 2: Mini-Project -- Predicting Student Math Performance
+---
 
-This project uses the [UCI Student Performance Dataset](https://archive.ics.uci.edu/dataset/320/student+performance), collected from two Portuguese secondary schools during the 2005-2006 school year. The dataset records demographic, social, and academic attributes for students enrolled in a math course, along with their grades at three points in the year: G1 (first period), G2 (second period), and G3 (final grade, 0-20).
+# Part 2: Mini-Project — Predicting the Daily High
 
-Your goal is to build a regression model that predicts G3 from student background and behavioral features -- without using G1 or G2. Predicting a final grade from earlier grades in the same class is a narrow task; predicting it from who students are and how they live is a much more interesting problem, and the kind of thing a real analyst or data engineer would be asked to do.
+In this project you will download one year of real daily weather for a city of your choice and build a regression model that predicts the daily high temperature from other measurements of the same day. This is a teaching task: the point is to practice the full regression workflow on real, slightly messy data. It also uses the exact dataset you will reuse in Week 3, where the task changes from predicting the high to classifying whether a day is good for a run.
 
-The data file `student_performance_math.csv` is in the course repository at `assignments/resources/`. Copy it into your `assignments_02/` folder before starting, and place your code in `project_02.py`.
+Put all code in `project_02.py` and save any figures to `outputs/`.
 
-## Pre-preprocessing
+## Task 1: Fetch the Data
 
-Before writing a single line of code, open `student_performance_math.csv` in a plain text editor (not Excel). Read the first few rows carefully.
+Use the free Open-Meteo historical API, which requires no key. The example below pulls one year of daily data for Charlotte, NC. Change the latitude and longitude to your own city.
 
-Notice how fields are separated. Notice which values are quoted and which are not. Look at what G1, G2, and G3 look like in the raw file. If you were loading this with `pd.read_csv()`, what parameter would you need to specify beyond the filename? Write that observation as a comment at the top of your script before you write the load call.
+Example — adapt the latitude, longitude, and dates to your city:
 
-## Feature Guide
+```python
+import requests
+import pandas as pd
 
-The version of the dataset used here has been trimmed to 18 columns (the original has 33). The tables below describe everything included. Read through them before you start coding.
+url = "https://archive-api.open-meteo.com/v1/archive"
+params = {
+    "latitude": 35.23,
+    "longitude": -80.84,
+    "start_date": "2023-01-01",
+    "end_date": "2023-12-31",
+    "daily": [
+        "temperature_2m_max",
+        "temperature_2m_min",
+        "precipitation_sum",
+        "wind_speed_10m_max",
+    ],
+    "timezone": "America/New_York",
+}
+response = requests.get(url, params=params)
+response.raise_for_status()
+df = pd.DataFrame(response.json()["daily"])
+df["date"] = pd.to_datetime(df["time"])
+df = df.drop("time", axis=1)
+```
 
-*Numeric features* -- use directly as numbers:
+Print the shape of the dataset and the first five rows. Add a comment noting which city you chose.
 
-| Column | Description |
-|---|---|
-| `age` | Student age (15-22) |
-| `Medu` | Mother's education: 0=none, 1=primary (4th grade), 2=5th-9th grade, 3=secondary, 4=higher education |
-| `Fedu` | Father's education (same 0-4 scale as Medu) |
-| `traveltime` | Home-to-school travel time: 1=under 15 min, 2=15-30 min, 3=30-60 min, 4=over 1 hour |
-| `studytime` | Weekly study time: 1=under 2 hours, 2=2-5 hours, 3=5-10 hours, 4=over 10 hours |
-| `failures` | Number of past class failures (0-3; values above 3 are coded as 3) |
-| `absences` | Number of school absences (0-93) |
-| `freetime` | Free time after school (1=very low to 5=very high) |
-| `goout` | Time going out with friends (1=very low to 5=very high) |
-| `Walc` | Weekend alcohol consumption (1=very low to 5=very high) |
+## Task 2: Look at the Features
 
-*Binary features stored as "yes"/"no"* -- you will convert these to 1/0:
+You are predicting `temperature_2m_max` (the daily high). Before modeling, look at the data.
 
-| Column | Description |
-|---|---|
-| `schoolsup` | Extra educational support from the school (remedial help, tutoring) |
-| `internet` | Has internet access at home |
-| `higher` | Wants to pursue higher education after secondary school |
-| `activities` | Participates in extra-curricular activities |
+1. Print `df.describe()` and confirm there are no missing values. If there are, decide how to handle them and explain your choice in a comment.
+2. Print the correlation of each numeric column with `temperature_2m_max`, sorted. Which feature relates most strongly to the daily high?
+3. Create at least one plot that helps you understand the data (for example, a histogram of the daily high, or a scatter plot of low versus high). Save it to `outputs/` and add a comment describing what you see.
 
-*Binary feature stored as "F"/"M"* -- you will convert to 0/1:
+## Task 3: Engineer a Feature
 
-| Column | Description |
-|---|---|
-| `sex` | Student sex (F=0, M=1). In this Portuguese dataset from 2005, male students show a modest math advantage. [PISA research](https://www.oecd.org/pisa/keyfindings/pisa-2012-results-gender.htm) shows this gap varies significantly by country and correlates with gender equality -- suggesting it reflects a social pattern in the educational context, not an inherent difference. The coefficient is worth noticing and discussing. |
+Add a binary `is_summer` column: 1 if the month is June, July, or August, and 0 otherwise. You can get the month from `df["date"].dt.month`.
 
-*Grade columns:*
-
-| Column | Description |
-|---|---|
-| `G1` | First period grade (0-20) |
-| `G2` | Second period grade (0-20) |
-| `G3` | Final period grade (0-20) -- your prediction target. Note: Some students have G3=0. This represents absence from the final exam, not an actual score of zero. You will need to decide how to handle these rows. |
-
-G1 and G2 are in the dataset but are not used as features in the main tasks below.
-
-## Task 1: Load and Explore
-
-Load the dataset with the correct separator. Print the shape, the first five rows, and the data types of all columns.
-
-Then plot a histogram of G3 with 21 bins (one per possible value, 0-20). Add a title `"Distribution of Final Math Grades"`, label both axes, and save to `outputs/g3_distribution.png`. You should see a cluster of zeros sitting apart from the main distribution. They represent the students who didn't take the final exam. 
-
-## Task 2: Preprocess the Data
-
-Handle the G3=0 rows first. Filter them out and save the result to a new DataFrame. Print the shape before and after to confirm how many rows were removed. Add a comment explaining your reasoning -- why would keeping these rows distort the model?
-
-Then convert the yes/no columns to 1/0 and the sex column to 0/1.
-
-Now check something interesting before moving on. Compute the Pearson correlation between `absences` and G3 on both the original dataset and the filtered one, and print both values. The difference is striking. Add a comment explaining why filtering changes the result: what were students with G3=0 doing in the original data that made `absences` look like a weak predictor? You might want to explore scatter plots to help understand this.
-
-## Task 3: Exploratory Data Analysis
-
-Compute the Pearson correlation between each numeric feature and G3 on the filtered dataset, and print them sorted from most negative to most positive. Which feature has the strongest relationship with G3? Are any results surprising?
-
-Then create at least two visualizations of your own choosing and save them to `outputs/`. Use your judgment from previous weeks of data engineering to guide your use of plots. Use the correlation results to guide you -- what relationships seem worth a closer look? Add a comment for each plot describing what you see.
+Print the number of summer and non-summer days, and add a comment: do you expect `is_summer` to help predict the daily high, and why?
 
 ## Task 4: Baseline Model
 
-Build the simplest possible model: use `failures` alone to predict G3. Split into training and test sets (80/20, `random_state=42`), fit a `LinearRegression` model, and print the slope, RMSE, and R² on the test set.
+Build the simplest useful model: use `temperature_2m_min` alone to predict `temperature_2m_max`. Split into training and test sets (80/20, `random_state=42`), fit a `LinearRegression` model, and print the slope, RMSE, and R² on the test set.
 
-Add a comment: given that grades are on a 0-20 scale, what do the slopes and RMSE tell you in plain English? Is R² better or worse than you expected from exploratory data analysis?
+Add a comment: the RMSE is in degrees Celsius. In plain English, how far off is a typical prediction?
 
-## Task 5: Build the Full Model
+## Task 5: Full Model
 
-Now build a regression model using all of the numeric and binary features from the Feature Guide:
+Now build a model using four features: `temperature_2m_min`, `precipitation_sum`, `wind_speed_10m_max`, and `is_summer`.
 
 ```python
-feature_cols = ["age", "Medu", "Fedu", "traveltime", "studytime", "failures",
-                "absences", "freetime", "goout", "Walc", "schoolsup",
-                "internet", "higher", "activities", "sex"]
-X = df_clean[feature_cols].values
-y = df_clean["G3"].values
+feature_cols = ["temperature_2m_min", "precipitation_sum",
+                "wind_speed_10m_max", "is_summer"]
+X = df[feature_cols].values
+y = df["temperature_2m_max"].values
 ```
 
-Split into training and test sets (80/20, `random_state=42`), fit a `LinearRegression` model, and print both train R² and test R², as well as RMSE on the test set. Compare the test R² to your baseline from Task 4 -- how much does adding more features help?
+Split (80/20, `random_state=42`), fit a `LinearRegression` model, and print both train R² and test R², plus RMSE on the test set. Compare the test R² to your baseline from Task 4. How much does adding features help?
 
-Print each feature name alongside its coefficient:
+Print each feature name with its coefficient:
 
 ```python
 for name, coef in zip(feature_cols, model.coef_):
-    print(f"{name:12s}: {coef:+.3f}")
+    print(f"{name:22s}: {coef:+.3f}")
 ```
 
-Look carefully at the coefficients. Sort them mentally from largest to smallest. Are any signs (positive or negative) surprising given what you know about the data? For any surprising result, add a comment with your best explanation. Then compare train R² to test R² -- are they close, or is there a gap? What does that tell you about the model?
-
-Finally, add a comment answering: if you were deploying this model in production, which features would you keep and which would you drop? Justify your choices based on what you see in the numbers.
+Add a comment interpreting the coefficients. Which features raise the predicted high, and which lower it? Are any signs surprising? Then compare train R² to test R². Are they close, or is there a gap, and what does that tell you?
 
 ## Task 6: Evaluate and Summarize
 
-A useful way to evaluate a regression model visually is a *predicted vs actual plot*. This is a scatter plot where each point in the test set becomes a dot, with the model's *prediction* (y_hat) on the x-axis and the true value (y) on the y-axis. If the model were perfect, every point would fall exactly on the diagonal (predicted = actual). Clusters or curves away from the diagonal reveal systematic errors that RMSE alone won't show you. Random scattering around the diagonal is expected, and acceptable, prediction error. 
+Create a *predicted vs actual plot* for your full model on the test set. Add a diagonal reference line, the title `"Predicted vs Actual (Full Model)"`, labeled axes, and save to `outputs/predicted_vs_actual_high.png`. Add a comment: does the model struggle more at the high end, the low end, or is the error roughly even across the range?
 
-Create this plot for your test set. Add a diagonal reference line (for y=y_predicted), a title `"Predicted vs Actual (Full Model)"`, labeled axes, and save to `outputs/predicted_vs_actual_g3.png`. Add a comment: does the model seem to struggle more at the high end, the low end, or is error roughly uniform across grade levels? What does a value above or below the diagonal mean?
+Then write a plain-language summary in comments covering:
 
-Then write a plain-language summary in your comments statements covering:
-
-- The size of the filtered dataset and the test set
-- The RMSE and R² of your best model in plain language -- on a 0-20 scale, what does a typical prediction error actually mean?
-- Which two features have the largest positive and largest negative coefficients, and what those mean
+- The size of the dataset and the test set
+- The RMSE and R² of your full model, and what a typical error of that size means on a temperature scale
+- Which feature has the largest effect on the predicted high, and in which direction
 - One result that surprised you
 
-## Neglected Feature: The Power of G1
+---
 
-Add `G1` (first period grade) as a feature to the full model from Task 5 and refit. We kept it out because it is so powerful. Print the new test R². The jump will be large -- from roughly 0.30 to somewhere around 0.80.
+# Optional Extensions
 
-Add a comment addressing these questions: does a high R² here mean G1 is *causing* G3? Is this a useful model for identifying students who might struggle? What might educators need to do if they wanted to intervene early, before G1 is even available?
+## Extension A (Optional): A Second City
 
-## After You're Done: Three Things Worth Understanding
+Pull the same year of data for a second city with a very different climate. Fit the same full model and compare the RMSE and R² between the two cities. Add a comment on any difference you see and a possible reason for it.
 
-If you built the full model correctly, a few results probably looked strange.
-None of them are mistakes -- they're some of the most important ideas in
-regression, and they're worth understanding before you move on. Try to answer
-each question yourself before expanding the explanation.
+## Extension B (Optional): More Years
 
-<details>
-<summary><strong>Why did <code>absences</code> almost disappear?</strong></summary>
+Expand the training data to three years instead of one. Does more data change the test R² or RMSE? Is the change large or small? Add a comment with your finding.
 
-In Task 2 you established that `absences` is one of the strongest *individual*
-correlates of G3. Yet in the full model its coefficient is nearly zero. Both
-things are true at once.
+## Extension C (Optional): Seasonality
 
-The question to sit with: if you already know a student's `failures`, `goout`,
-and `Walc`, how much *extra* does `absences` tell you? A coefficient answers
-"what does this feature add, holding the others fixed?" -- not "is this feature
-related to the grade?" When features carry overlapping information, the shared
-signal gets distributed among them, and a strong raw correlate can flatten out.
+Replace `is_summer` with the month number (1–12) as a numeric feature, then try it as twelve separate one-hot columns instead. Which representation predicts the daily high better, and why might that be? Add a comment with your finding.
 
-This is the single most common way people misread a regression: treating a
-small coefficient as "this doesn't matter." It can instead mean "something else
-already said it."
-</details>
+Good luck. This is the same dataset you will classify in Week 3, so keep your city in mind.
+
+---
 
 <details>
-<summary><strong>Why did <code>higher</code> and <code>failures</code> change when you added features?</strong></summary>
+<summary>Rubric (for AirHub reviewer and mentors)</summary>
 
-Compare the coefficients here to your baseline model. `failures` shrank;
-`higher` moved a lot. The features didn't change -- the *question each
-coefficient answers* changed. In a one-feature model, `failures` absorbs the
-influence of everything correlated with it. Add those other features and each
-coefficient narrows to its own unique contribution. Coefficients are always
-relative to the company they keep.
+### Required Deliverables/Tasks
+
+**General grading notes:**
+
+- **Mini-project numbers vary by student.** The student chooses their own city and year, so exact slopes, RMSE, R², and coefficients will differ. Do not fail a student for numbers that differ from any reference. Grade whether the workflow is correct and the interpretation is reasonable.
+- **File paths and figure names are conventions, not pass/fail.** The reviewer cannot see the filesystem. Do not fail a student for saving a plot under a different name or path.
+- **Sample values are examples.** `Example — adapt to your own layout`: the latitude/longitude/dates in Task 1, and the city choice. `Use exactly as written`: the warmup setup blocks that are labeled "Use exactly as written" (the `temp_min`/`is_rainy`/`temp_max` generator and the Q1 arrays), because later warmup questions depend on those values.
+
+**Part 1 — `warmup_02.py`:**
+
+- **scikit-learn Q1** — a `LinearRegression` fit on the given `temp_min`/`temp_max` arrays; printed slope, intercept, and predictions for lows of 6 and 18, each labeled.
+- **scikit-learn Q2** — the 1D array's shape printed, reshaped to 2D with `.reshape(-1, 1)`, the new shape printed, and a comment on why `X` must be 2D.
+- **Linear Regression Q1** — a scatter of `temp_min` vs `temp_max` colored by `is_rainy`, titled and axis-labeled, saved to `outputs/`; a comment on the visible groups.
+- **Linear Regression Q2** — an 80/20 split on `temp_min` alone (reshaped to 2D), `random_state=42`; shapes of all four arrays printed.
+- **Linear Regression Q3** — a fitted model with slope and intercept printed; test-set RMSE and R² printed; a comment interpreting the slope.
+- **Linear Regression Q4** — a two-feature model (`temp_min`, `is_rainy`); test R² compared to Q3; both coefficients printed; a comment interpreting the `is_rainy` coefficient.
+- **Linear Regression Q5** — a predicted-vs-actual plot for the two-feature model with a diagonal line, titled and labeled, saved to `outputs/`; a comment on what points above/below the diagonal mean.
+
+**Part 2 — `project_02.py`:**
+
+- **Task 1** — daily weather fetched from Open-Meteo (any city/year); shape and first rows printed; a comment naming the city.
+- **Task 2** — `describe()` and a missing-value check; per-feature correlation with the daily high, sorted; at least one plot saved with a comment.
+- **Task 3** — an `is_summer` binary column derived from the month; counts printed; a comment on the expected effect.
+- **Task 4** — a baseline model on `temperature_2m_min` alone; slope, RMSE, and test R² printed; a comment interpreting RMSE in degrees.
+- **Task 5** — a four-feature model; train and test R² plus test RMSE printed; each feature's coefficient printed; a comment interpreting the coefficients and the train/test gap.
+- **Task 6** — a predicted-vs-actual plot for the full model saved to `outputs/`, plus a plain-language summary covering dataset size, RMSE/R² meaning, the largest-effect feature, and one surprise.
+
+### Optional Deliverables/Tasks
+
+**Do not fail a student for omitting any of these.** They are marked "(Optional)".
+
+- **Extension A (Optional)** — a second city, same model, RMSE/R² compared with a comment.
+- **Extension B (Optional)** — three years of data, change in test R²/RMSE noted.
+- **Extension C (Optional)** — month as a numeric feature versus one-hot columns, with a comment on which predicts better.
+
 </details>
-
-<details>
-<summary><strong>What are <code>goout</code> and <code>Walc</code> telling you?</strong></summary>
-
-These behavioral features carry real, negative relationships with G3 that
-survive into the full model. Before you explain them, ask: is this a causal
-story, or could both the behavior and the grade share a common upstream cause?
-Your data can't settle that -- but noticing the ambiguity is exactly the
-judgment a real analyst is paid for.
-</details>
-
-Good luck on this mini-regression analysis project!
