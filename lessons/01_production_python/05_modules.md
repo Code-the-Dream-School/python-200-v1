@@ -335,7 +335,11 @@ tail = [ln for ln in result.stdout.splitlines() if "Error" in ln or "error" in l
 print("\n".join(tail) or result.stdout[-800:])
 ```
 
-The result is `ModuleNotFoundError: No module named 'weatherkit'`. This is the most common source of confusion when people begin splitting projects into packages, and the solution is almost always to run the command from the project root. Note that `python -m pytest`, rather than a bare `pytest`, also helps, because the `-m` form adds the current directory to `sys.path`.
+The result is `ModuleNotFoundError: No module named 'weatherkit'`. This is the most common source of confusion when people begin splitting projects into packages. Two things fix it, and you usually want both.
+
+First, run the command from the project root, not from inside `tests/`. Second, run it as `python -m pytest` rather than a bare `pytest`. The `-m` form adds the current directory to `sys.path`, which a bare `pytest` does not do. When your tests import your own package, as they do here, the plain `pytest` command run from the project root is often *not* enough on its own, because pytest searches from the test file's own directory instead. `python -m pytest` from the project root is the reliable combination.
+
+There is a third option that lets a bare `pytest` work: place an empty file named `conftest.py` in the project root. pytest treats the directory containing the topmost `conftest.py` as a root and adds it to `sys.path`, so `weatherkit/` becomes visible again. The assignment this week uses that approach, so a bare `pytest` run from `assignments_01/` finds your package.
 
 For a real project you would go one step further and make the package properly installable, so it works from anywhere:
 
