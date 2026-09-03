@@ -70,7 +70,7 @@ In a comment block, explain the difference between `insert` and `upsert` in `sup
 
 Build `project_09.py`, a script that implements a complete Extract + Load pipeline: it fetches 2023 daily weather data from the Open-Meteo API for a city of your choice and loads it into your Supabase `weather_raw` table.
 
-This is the same data your Week 4 classifier was trained on. In later weeks, you will use these rows as the input to the transform step — so make sure your column values match what the model expects.
+This is the same kind of data the classifier you built in Weeks 3–4 was trained on. In later weeks, you will use these rows as the input to the transform step — so make sure your column names match what the model expects.
 
 ## Step 1: Extract
 
@@ -113,3 +113,41 @@ Record a short video (target: 3 minutes, max: 5). Show:
 3. Your verification output printed to the terminal
 
 Paste the video link in a comment at the top of `project_09.py`.
+
+---
+
+<details>
+<summary>Rubric (for AirHub reviewer and mentors)</summary>
+
+### Required Deliverables/Tasks
+
+**General grading notes:**
+
+- **Student-chosen values vary.** The student picks their own city, so the specific weather values, row counts, dates, and the `2023-07-04` row contents differ. Do not fail a student for numbers that differ from any reference. A full year is ~365 rows.
+- **External artifacts cannot be inspected.** The reviewer cannot see the student's Supabase project, their `.env`, the video, or their filesystem. Grade the submitted code and written answers; do not fail a student for a Supabase dashboard, a video, or a file path you cannot verify. The requirement to gitignore `.env` is a real security practice, but its presence/absence is not something the reviewer can confirm.
+- **Table and column names are exact.** `Use exactly as written (Weeks 10–11 read these exact names)`: the table `weather_raw` and its columns `temperature_2m_max`, `temperature_2m_min`, `precipitation_sum`, `wind_speed_10m_max`, `date`. These must match the Open-Meteo API field names because later weeks feed these rows to the classifier without renaming.
+- **Function names are exact where the assignment specifies them.** `Use exactly as written`: `get_client`, `insert_test_record`, `get_records_by_date_range`, `safe_upsert`. `Example — adapt to your own values`: the chosen city, latitude/longitude, and sample record values.
+
+**Part 1 — `warmup_09.py`:**
+
+- **Connection Q1** — a comment naming the two connection pieces (Project URL and API key), where to find them in the dashboard, and why they should never be hardcoded.
+- **Connection Q2** — a `get_client()` that loads credentials via `python-dotenv`, returns a Supabase client, and raises a clear error if either environment variable is missing.
+- **Connection Q3** — a comment explaining Row Level Security, why it was disabled for this course, and a real-world case where it should stay enabled.
+- **CRUD Q1** — an `insert_test_record(supabase)` that inserts one row into `weather_raw` with today's date and plausible values for the four weather columns; a comment on what running it twice does and how to make it safe to repeat.
+- **CRUD Q2** — a `get_records_by_date_range(supabase, start, end)` returning the matching row dictionaries, tested over a range that includes the inserted row and printed.
+- **CRUD Q3** — a comment on `insert` vs `upsert` with a concrete example, plus a `safe_upsert(supabase, records)` that upserts using `date` as the conflict key and prints the number of rows affected.
+- **Idempotency Q1** — a comment defining idempotency and giving one concrete failure example for a non-idempotent pipeline that crashes and restarts.
+
+**Part 2 — `project_09.py`:**
+
+- **Step 1 — Extract** — fetches full-year 2023 daily weather (the four variables) for the chosen city, uses `response.raise_for_status()`, and prints a summary.
+- **Step 2 — Transform** — converts the columnar response into a list of row dictionaries whose keys match the `weather_raw` columns; prints the first and last record; a comment on the expected vs actual record count.
+- **Step 3 — Load** — upserts all records into `weather_raw`, prints the number upserted, and confirms that a second run does not change the row count, with a comment on idempotency.
+- **Step 4 — Verify** — prints the total row count, the earliest and latest dates, and the `2023-07-04` row (or nearest date).
+- **Video** — a link at the top of `project_09.py` to a short video showing the script running, the `weather_raw` table with rows, and the verification output.
+
+### Optional Deliverables/Tasks
+
+**None.**
+
+</details>
