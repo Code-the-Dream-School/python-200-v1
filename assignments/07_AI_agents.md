@@ -40,7 +40,7 @@ Put all warmup exercises in a single file: `warmup_07.py`. Use comments to mark 
 
 ### Q1
 
-Define the following Python function:
+Define the following Python function (use it as written — later questions call `celsius_to_fahrenheit` by this exact name):
 
 ```python
 def celsius_to_fahrenheit(celsius: float) -> str:
@@ -173,7 +173,7 @@ This is the last answer to put in `warmup_07.py`. Congrats!!!
 
 # Part 2: Mini-Project — World Happiness Agent
 
-In Week 1, you built a Prefect pipeline that loaded, cleaned, and analyzed the World Happiness dataset. In this project, you will revisit that same dataset — but this time you will use a `CodeAgent` to explore it conversationally.
+This project uses the **World Happiness dataset** — a set of yearly CSV files (2015–2024) reporting national happiness scores and the factors associated with them. You will use a `CodeAgent` to explore the data conversationally, rather than writing the analysis code yourself.
 
 The goal is to build a complete agent from scratch: define the tools, instantiate the agent, and run it through a series of guided queries. Along the way you should see exactly where the agent uses your tools, where it writes its own code, and where its reasoning impresses or surprises you.
 
@@ -181,13 +181,7 @@ Place your code in `assignments_07/project_07.py`. Save any plots to `assignment
 
 ## Pre-task: Load the Data
 
-Your agent will need access to the World Happiness data. If you still have the merged file from Week 1, you can point directly to it:
-
-```python
-DATA_PATH = "assignments_01/outputs/merged_happiness.csv"
-```
-
-If you don't have that file, you can load and merge the yearly CSVs from `assignments/resources/happiness_project/` inside a `load_happiness_data` tool — see the hint in Task 1 below.
+Your agent will need access to the World Happiness data. The yearly CSV files (2015–2024) are in the course repo at `assignments/resources/happiness_project/`. Copy that folder into your `assignments_07/` directory. Your `load_happiness_data` tool (Task 1) will load and merge those files into a single DataFrame — see the hint in Task 1 below.
 
 ---
 
@@ -205,7 +199,7 @@ def load_happiness_data() -> dict:
     """
 ```
 
-Load the merged CSV from `DATA_PATH`. If that file does not exist, fall back to loading and merging all yearly CSVs from `assignments/resources/happiness_project/` (use a loop, just like in the Week 1 project). Store the result in the global `df`. Return a dict with `"shape"` and `"columns"`.
+Load and merge all yearly CSVs from `happiness_project/` (use a loop over the yearly files and concatenate them). Store the result in the global `df`. Return a dict with `"shape"` and `"columns"`.
 
 **Tool 2: `summarize_column`**
 
@@ -249,7 +243,7 @@ Write complete Google-style docstrings for all four tools. Remember: smolagents 
 
 ## Task 2: Build the Agent
 
-Instantiate a `CodeAgent`:
+Instantiate a `CodeAgent`. The `SYSTEM_PROMPT` wording below is an example you can adapt; keep the four tool names (`load_happiness_data`, `summarize_column`, `compute_correlation`, `get_top_n_countries`) as written, since Task 3's queries rely on them.
 
 ```python
 from smolagents import CodeAgent, OpenAIServerModel
@@ -300,7 +294,7 @@ Query 5 should cause the agent to write matplotlib code (no tool covers multi-li
 
 ## Task 4: Your Own Questions
 
-Run two additional queries of your own choice. Try to make at least one of them require the agent to write code rather than just call a tool.
+Run two additional queries of your own choice. Try to make at least one of them require the agent to write code rather than just call a tool. The `"..."` placeholders below are examples — replace them with your own questions.
 
 ```python
 # My query 1
@@ -325,8 +319,10 @@ Add a comment block at the very bottom of `project_07.py` answering these three 
 ```python
 # --- Reflection ---
 #
-# 1. In Query 3, how did the agent communicate whether the correlation was statistically
-#    significant? Did it use the p-value correctly? What threshold did it apply?
+# 1. In Query 3, how did the agent report the correlation? The `compute_correlation` tool
+#    returns both a Pearson r and a p-value — did the agent compute and communicate the
+#    result sensibly (for example, describing the strength and direction of the
+#    relationship, and noting how confident we can be in it)?
 #
 # 2. Did any of the agent's responses surprise you — either by being more capable than
 #    you expected, or less? Describe one specific example.
@@ -353,3 +349,45 @@ python project_07.py
 ```
 
 When you run it, all five guided queries should complete, the plot should be saved to `outputs/happiness_by_region.png`, and your two custom queries should run as well.
+
+---
+
+<details>
+<summary>Rubric (for AirHub reviewer and mentors)</summary>
+
+**General grading notes:**
+
+- This assignment builds and runs LLM-driven agents. The agent's behavior, the number of tool calls it makes, and any text or explanation it generates will **vary from run to run**. Do NOT fail a student because their agent's wording, step count, or reasoning differs from a reference answer or from another student's. Judge whether the student built the required tools and structure correctly, not whether the agent produced identical output.
+- Much of Part 1 asks the student to copy setup code from the lesson (for example `run_agent`, the `CsvManager` class, `run_agent_cycle`, the `TOOLS` list, and the lesson's `SYSTEM_PROMPT`). The reviewer cannot see the lesson. Do NOT fail a student for not matching lesson code that is not shown in this assignment; grade against the concrete requirements stated below.
+- File paths and folder layout (`assignments_07/`, `warmup_07.py`, `project_07.py`, `outputs/`, `happiness_project/`, `outputs/happiness_by_region.png`) are checked by the automated run, not by reviewer inspection. Do NOT fail a student over a path or directory name you cannot verify.
+- Exact-vs-example: tool and function names the tasks reference (`celsius_to_fahrenheit`, `load_happiness_data`, `summarize_column`, `compute_correlation`, `get_top_n_countries`) and the return-dict keys (`col1`, `col2`, `pearson_r`, `p_value`, `shape`, `columns`) — `Use exactly as written (later tasks depend on these names)`. Sample queries, the `SYSTEM_PROMPT` wording, the `api_key`/`model_id` values, and the student's own Task 4 questions — `Example — adapt to your own values`.
+
+### Required Deliverables/Tasks
+
+**Part 1 — Warmup (`warmup_07.py`)**
+
+- **Q1** — Define `celsius_to_fahrenheit` (use exactly as written); write a JSON schema dict with `name`, `description`, and `parameters` (a `celsius` property of type `"number"`); call the function directly with `0`, `100`, and `-40` and print each result.
+- **Q2** — Copy the lesson's `run_agent` (with `get_current_time` as its only tool); add a comment block predicting whether the Celsius query triggers a tool call and how many API calls it takes; then call `run_agent("Convert 100 degrees Celsius to Fahrenheit")`, print the result, and note whether the prediction was correct. The prediction reasoning is what's graded, not a specific right/wrong answer.
+- **Q3** — Extend the agent to support both tools (add `celsius_to_fahrenheit` to the `tools` list and dispatch it in `run_agent`); run the two given test queries and print each; add a comment after each print explaining whether a tool was called and why.
+- **Q4** — Add a `compute_correlation` method to `CsvManager` using `scipy.stats.pearsonr`; return a dict with keys `"col1"`, `"col2"`, `"pearson_r"`, `"p_value"` (each float rounded to 4 decimals) and `{"error": "..."}` on a missing column or no loaded CSV; also add its JSON schema entry to `tools_schema` and its entry to `node_tools`.
+- **Q5** — Recreate the tool-round-limit scenario and run the `bike_commute.csv` correlation query between `avg_traffic_density` and `avg_speed_kmh`; print the agent's final response. The specific CSV filename and column names are the assignment's own example data — grade that the correlation tool is now reached and returns a result, not the exact numbers.
+- **Q6** — Print the full `messages` list; add a comment identifying what each role (`system`, `user`, `assistant`, `tool`) represents in the ReAct loop.
+- **Q7** — Re-wrap `compute_correlation` as a smolagents `@tool` that calls `csv_manager.compute_correlation(...)`; print `compute_correlation.description`; add a comment comparing the auto-generated description to the manual Q4 schema and what smolagents needs from the developer.
+- **Q8** — Create both a `ToolCallingAgent` and a `CodeAgent` with the same `TOOLS` list and `OpenAIServerModel`; run the given scatter-plot prompt through both, print both responses, and add a comment block answering the two questions (what each agent produced / when each is more useful). Whether the `ToolCallingAgent` changes the dot color depends on the agent's behavior — do not fail on the specific observed outcome, only on the comment being present and reasoned.
+- **Q9** — Comment block at the bottom answering both questions (a task suited to `ToolCallingAgent`; one risk unique to `CodeAgent`).
+
+**Part 2 — Mini-Project (`project_07.py`)**
+
+- **Pre-task** — Make the `happiness_project/` yearly CSVs available to the agent (copied from `assignments/resources/happiness_project/`). Path/layout is lenient.
+- **Task 1** — Four smolagents `@tool` functions with complete Google-style docstrings: `load_happiness_data` (merges the yearly CSVs into the global `df`, returns a dict with `"shape"` and `"columns"`); `summarize_column` (returns `df[column].describe().to_dict()`, `{"error": ...}` on bad input); `compute_correlation` (Pearson r and p-value via `scipy.stats.pearsonr`, keys `"col1"`, `"col2"`, `"pearson_r"`, `"p_value"` rounded to 4 decimals, `{"error": ...}` on bad input); `get_top_n_countries` (filters by `year`, sorts by `column` descending, returns top `n` rows as a list of dicts, `{"error": ...}` on bad input). Tool names must be exact; return the described structures.
+- **Task 2** — Instantiate a `CodeAgent` with the four tools, an `OpenAIServerModel`, a system prompt/instructions, `additional_authorized_imports`, and `max_steps`. The `SYSTEM_PROMPT` wording and the `api_key`/`model_id` are examples — adapt freely.
+- **Task 3** — Run the five guided queries in sequence with `reset=False` and print each response; the fifth query should lead the agent to write matplotlib code and save a line chart (one line per region) to `outputs/happiness_by_region.png`. Grade that the queries run and the plot file is produced; the exact chart appearance and agent wording vary.
+- **Task 4** — Run two of the student's own queries with `reset=False`, print each, and add a comment noting whether each triggered tool use, code generation, or both (at least one should require code). The questions themselves are the student's choice — do not fail on their content.
+- **Task 5** — A `# --- Reflection ---` comment block at the very bottom answering all three questions.
+- **Running** — The script runs the Task 3 and Task 4 queries under an `if __name__ == "__main__":` block and is runnable as a single script. The specific run command/filename is a convention, not a pass/fail check.
+
+### Optional Deliverables/Tasks
+
+**None.**
+
+</details>
