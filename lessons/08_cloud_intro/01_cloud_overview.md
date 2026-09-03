@@ -87,6 +87,6 @@ Managed data platforms take a different approach: they pre-wire the pieces for y
 
 ## Wrap-up
 
-Before diving into the hands-on Azure work in the next lesson, take some time to work through Microsoft's learning module on cloud fundamentals. It will reinforce what you've read here and fill in any gaps.
+The next lesson maps the cloud provider landscape -- the big three hyperscalers, the developer-tier platforms, and the backend-as-a-service layer -- and explains why this course uses Supabase for the hands-on work in weeks 9 through 11.
 
-* [Introduction to Microsoft Azure: Describe Cloud Concepts](https://learn.microsoft.com/en-us/training/paths/microsoft-azure-fundamentals-describe-cloud-concepts/)
+If you would like extra reinforcement of the concepts in this lesson, Microsoft's [Describe Cloud Concepts](https://learn.microsoft.com/en-us/training/paths/microsoft-azure-fundamentals-describe-cloud-concepts/) module is a good, mostly platform-agnostic review of cloud fundamentals. It is optional, and you do not need an account or any hands-on cloud setup for this course beyond the free Supabase project you will create in Week 9.
