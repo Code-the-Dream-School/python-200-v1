@@ -1,142 +1,122 @@
-# Week 11 Assignment: Cloud ETL Capstone
+# Week 10 Assignments
 
-This is the capstone project for Python 200. You have spent ten weeks building toward this: a cloud ETL pipeline that extracts weather data from a live API, transforms it with an ML classifier and an LLM, loads the results to Supabase, and runs the whole thing as an orchestrated, observable Prefect flow. This week you build it yourself.
-
-The warmup checks your understanding of Prefect and production patterns. The project is the pipeline.
+This week you built the Transform step of the pipeline: the `WeatherClassifier` component from Week 4 runs on each row in `weather_raw`, then an LLM adds a one-sentence recommendation, and the combined output goes into `weather_enriched`. Finally, you wrap the whole thing into a Prefect flow. The warmup checks your understanding of where ML and LLMs each belong and how they complement each other. The project has you build the complete double-transform end-to-end and orchestrate it.
 
 ---
 
 # Submission Instructions
 
-In your `python200-homework` repository, create a folder called `assignments_11/`. Inside that folder, create:
+In your `python200-homework` repository, create a folder called `assignments_10/`. Inside that folder, create:
 
-1. `warmup_11.py` — warmup exercises (conceptual answers as comments, code as requested)
-2. `etl_pipeline.py` — the complete ETL pipeline
+1. `warmup_10.py` — warmup exercises (conceptual answers as comments, code as runnable Python)
+2. `transform_10.py` — the complete double-transform pipeline, wrapped as a Prefect flow
 3. `weather_model/` — copy your `WeatherClassifier` component package from Week 4 here
 4. `models/` — copy your `weather_classifier.pkl` from Week 4 here
-5. `outputs/pipeline_run.md` — a short written reflection on your run
 
 When finished, commit and open a PR as described in the [assignments README](README.md).
 
-**Prerequisites:** Your Week 9 project must have run and populated `weather_raw` before running this pipeline. Your Week 4 `weather_model/` package and `models/weather_classifier.pkl` must be present.
+**Prerequisites:** Your Week 9 project must have run successfully and populated `weather_raw` in your Supabase project before you run this week's transform script.
 
 ```bash
-uv pip install prefect requests openai python-dotenv supabase joblib scikit-learn pandas
+uv pip install supabase python-dotenv joblib scikit-learn pandas openai prefect
 ```
 
 ---
 
 # Part 1: Warmup
 
-Put all warmup answers in `warmup_11.py`. Use comments to mark each section and question. For conceptual questions, write your answer as a comment block. For code questions, write working Python.
+Put all warmup answers in `warmup_10.py`. Label each section and question with comments.
 
-## Prefect Orchestration
+## ML vs. LLM in Pipelines
 
-### Prefect Question 1
+### ML/LLM Question 1
 
-In a comment block, answer: what is the difference between a `@task` and a `@flow` in Prefect? You have a helper function that converts a temperature from Celsius to Fahrenheit — a pure, in-memory calculation with no I/O. Would you decorate it with `@task`? Why or why not?
+In a comment block, explain the difference between what the ML classifier produces and what the LLM produces in this week's pipeline. Why does each tool do what it does? What would go wrong if you tried to swap them — using the LLM to make the binary good/skip prediction and the ML model to write the recommendation?
 
-### Prefect Question 2
+### ML/LLM Question 2
 
-Write just the decorator line for a task named `call_api` that retries up to 3 times with a 30-second delay between attempts.
+For each task below, write one sentence in a comment block stating whether you would use a trained ML model, an LLM, or deterministic code, and why:
 
-### Prefect Question 3
+- Converting a date string like `"2023-07-04"` to day-of-week
+- Classifying a job posting as "entry-level", "mid-level", or "senior" based on freeform text
+- Predicting customer churn given 15 numeric features and a labeled training dataset
+- Normalizing inconsistent city names ("NYC", "New York City", "New York, NY") to a canonical form
+- Summing a column of revenue figures
 
-You run your pipeline and the Prefect UI shows: `extract` is *Completed*, `load_raw` is *Completed*, `transform` is *Failed*, `load_enriched` never ran. In a comment block, describe: where in the UI do you look to understand what went wrong, and what specific information would you expect to find there?
+### ML/LLM Question 3
 
-## Production Patterns
+In a comment block, answer: what is incremental processing, and why is it important for this pipeline? What would happen — in terms of cost and data correctness — if the transform script re-processed all 365 records every time it ran?
 
-### Production Question 1
+## Prompt Design
 
-In a comment block, explain what `raise_for_status()` does and why it is better than writing `if response.status_code != 200: print("error")` in a pipeline task. What happens to downstream tasks in each case when the API returns a 500 error?
+### Prompt Question 1
 
-### Production Question 2
+The lesson prompt asks the LLM for exactly one sentence. Write an alternative system prompt that asks for a two-sentence recommendation where the first sentence states the prediction and the second sentence explains the reasoning. In a comment, describe: what would you need to change in the validation logic to accommodate two sentences instead of one?
 
-Your `load_raw` task uses `upsert` with `on_conflict="date"` instead of `insert`. The pipeline crashes halfway through the transform step. You fix the bug and re-run from the beginning. In a comment block, explain: what does `upsert` protect you from in this scenario, and what would happen if you had used plain `insert` instead?
+### Prompt Question 2
 
-### Production Question 3
-
-Write a task stub — just the function signature, decorator, and a single log line — that uses `get_run_logger()` to log an INFO message saying how many enrichment records were upserted. The function should accept `enrichment_records` (a list) as its argument.
-
-### Production Question 4
-
-In a comment block, explain how the incremental processing check in the transform task contributes to idempotency. If you removed it and the pipeline ran the ML and LLM steps on all 365 records every time, what would be the practical consequences (in terms of cost, time, and data correctness)?
+Write a function `call_with_retry(client, messages, max_retries=3)` that calls `client.chat.completions.create()` and retries up to `max_retries` times on any exception, with a 2-second wait between attempts. On final failure, return `None`. In a comment, describe when you would use this in a production pipeline.
 
 ---
 
-# Part 2: Project — Full ETL Pipeline
+# Part 2: Project — The Double-Transform Pipeline
 
-Build `etl_pipeline.py`: a complete Prefect flow with four tasks that orchestrate the full Extract + Load + Transform + Load pipeline. Write it yourself using the lessons as a guide, not as code to copy verbatim. The requirements below specify what each task must do; the implementation is yours.
+Build `transform_10.py`, a script that reads from `weather_raw`, runs the ML classifier and LLM enrichment on each unprocessed record, and writes the results to `weather_enriched`.
 
-## Requirements
+## Step 1: Incremental Read
 
-### extract task
+Fetch all rows from `weather_raw`. Fetch all dates already present in `weather_enriched`. Determine which records still need processing.
 
-- `@task(retries=2, retry_delay_seconds=10)`
-- Calls the Open-Meteo historical archive API to fetch 2023 daily weather data for a city of your choice, using the same four variables as Week 4
-- Uses `raise_for_status()`
-- Converts the columnar API response into a list of row dictionaries
-- Prints a confirmation with the record count
-- Returns the list of row dicts
+Print a summary: how many raw records exist, how many are already enriched, and how many will be processed this run.
 
-### load_raw task
+## Step 2: ML Transform
 
-- `@task(retries=2, retry_delay_seconds=5)`
-- Upserts the raw records into `weather_raw` using `on_conflict="date"`
-- Prints a confirmation with the upserted row count
+Create a `WeatherClassifier` from `models/weather_classifier.pkl` and call `predict()` on the unprocessed records. Build a list of enrichment records with `date`, `good_for_running` (from each `Prediction`'s `label`), and `confidence` (from its `probability`).
 
-### transform task
+Print a summary of the predictions: how many days were classified as good, and what is the confidence range?
 
-- `@task`
-- Performs an incremental check: fetches dates already in `weather_enriched` and skips them
-- Uses the `WeatherClassifier` component (loaded from `models/weather_classifier.pkl`) to classify the unprocessed records, reading each `Prediction`'s `label` and `probability`
-- Calls the OpenAI API to generate a one-sentence recommendation for each record
-- Handles LLM errors gracefully with a fallback string
-- Prints progress every 50 records
-- Returns the complete list of enrichment records
+## Step 3: LLM Transform
 
-### load_enriched task
+Design a system prompt and user message function that passes each day's weather features and ML prediction to `gpt-4o-mini`. For each enrichment record, call the API and add an `llm_summary` field with the one-sentence recommendation.
 
-- `@task(retries=2, retry_delay_seconds=5)`
-- Guards against an empty list (prints a message and returns early if nothing to load)
-- Upserts enrichment records into `weather_enriched` using `on_conflict="date"`
-- Prints a confirmation with the upserted row count
+Handle API errors gracefully: use a fallback string rather than crashing. Add a progress print every 50 records.
 
-### Flow
+## Step 4: Load
 
-- `@flow(log_prints=True)`
-- Calls all four tasks in the correct order
-- Prints a final completion message
+Upsert all enrichment records into `weather_enriched`. Print the number of rows upserted.
 
-## Running and Verifying
+## Step 5: Verify
 
-1. Start the Prefect server: `prefect server start`
-2. Run your pipeline: `python etl_pipeline.py`
-3. Open `http://localhost:4200` and verify all four tasks show *Completed*
-4. Confirm the data in the Supabase dashboard: `weather_raw` should have 365 rows, `weather_enriched` should have at least as many
+Query `weather_enriched` and print:
+- The total number of rows
+- Five sample rows showing `date`, `good_for_running`, `confidence`, and `llm_summary`
+- The number of days classified as good for running
 
-## Reflection
+Add a comment: look at a few of the LLM summaries. Do they accurately reflect the weather features and the model's prediction? Pick one you think is particularly good and one that seems off — what might have caused the weaker one?
 
-Write `outputs/pipeline_run.md` with a short reflection (5–7 sentences) covering:
+## Step 6: Orchestrate with Prefect
 
-- Did the pipeline run cleanly on the first try? If not, what failed and how did you fix it?
-- What did the Prefect UI show? Did any tasks retry?
-- Look at a few rows in `weather_enriched`. Do the LLM summaries seem accurate and useful? Pick one that stands out (positively or negatively) and explain why.
-- What is one thing you would change or add if you were deploying this pipeline to run on a daily schedule — fetching the previous day's forecast each morning and enriching it automatically?
+Now wrap your pipeline in a Prefect flow, as shown in the orchestration lesson. Turn each stage — read, classify, enrich, load — into an `@task`, and write a `@flow(log_prints=True)` that calls them in order. Run the flow and confirm it completes with every task marked as completed.
+
+Keep it light: you are not adding retries, scheduling, or the Prefect UI this week — that is Week 11. The goal is a working flow with the four steps as tracked tasks. `transform_10.py` should define and run this flow.
+
+## Step 7: Reflect
+
+Add a comment block (at least 5–6 sentences) addressing:
+
+1. Your ML classifier was trained on one particular city's data (whichever city you chose in Week 3). If you loaded weather for a *different* city in Week 9 than the one your model was trained on, do you expect the classifier's predictions to be accurate? Why or why not?
+2. The LLM recommendations are generated from the model's prediction and the weather features. Does the LLM have any ability to "override" the classifier, or is it purely additive? What are the implications of that?
+3. If you ran this pipeline on 50,000 records instead of 365, what would be your main concern: cost, latency, or something else? How would you address it?
 
 ## Video
 
-Record a short video (target: 4 minutes, max: 6). Show:
+Record a short video (target: 3–4 minutes, max: 5). Show:
 
-1. The pipeline running in your terminal to completion, with progress output visible
-2. The Prefect UI with all four tasks in *Completed* state, and the logs from the transform task
-3. The `weather_enriched` table in your Supabase dashboard with rows visible, including the `llm_summary` column
+1. The Prefect flow running in your terminal with no errors — the run summary showing each task completing
+2. The `weather_enriched` table in your Supabase dashboard with rows visible
+3. A few printed sample rows showing the LLM recommendations
 
-Paste the video link in a comment at the top of `etl_pipeline.py`.
-
----
-
-Congratulations! With this step, you have finished Python for Cloud & AI. You built a full cloud ETL pipeline from scratch — extract, transform with an ML model and an LLM, load to a cloud database, orchestrated and observable with Prefect. That is a genuinely production-relevant workflow.
+Paste the video link in a comment at the top of `transform_10.py`.
 
 ---
 
@@ -147,31 +127,28 @@ Congratulations! With this step, you have finished Python for Cloud & AI. You bu
 
 **General grading notes:**
 
-- **This is a capstone written to a specification, not a reference implementation.** The assignment says to write the pipeline from scratch, so implementations vary widely. Grade whether each task meets its stated requirements, not whether the code matches any particular solution.
-- **Student-chosen values and generated text vary.** The city, the specific rows, and every LLM `llm_summary` differ between students and runs. Do not fail a student for text or numbers that differ from a reference. `weather_raw` should have roughly 365 rows for a full year.
-- **External artifacts and copied files cannot be inspected.** The reviewer cannot see the student's Supabase project, the Prefect UI, the video, or their filesystem, and cannot confirm that `weather_model/` and `models/weather_classifier.pkl` were copied in. Grade the submitted code and the written reflection; do not fail a student for an unverifiable dashboard, UI, video, or file.
-- **Names and Prefect parameters are exact.** `Use exactly as written`: the tables `weather_raw`/`weather_enriched` and their columns; the four task names `extract`, `load_raw`, `transform`, `load_enriched`; the retry parameters given per task (e.g. `retries=2, retry_delay_seconds=10`); `on_conflict="date"`; `get_run_logger`; the `WeatherClassifier` component and its `Prediction` `label`/`probability`; and the model id `gpt-4o-mini`. `Example — adapt to your own values`: the chosen city and the exact prompt wording.
+- **Student-chosen values and generated text vary.** The city, the specific predictions, and every LLM-generated `llm_summary` differ between students and between runs. Do not fail a student for text or numbers that differ from any reference. A full year is roughly 365 records.
+- **External artifacts and copied files cannot be inspected.** The reviewer cannot see the student's Supabase project, the video, their `.env`, or their filesystem, and cannot confirm that `weather_model/` and `models/weather_classifier.pkl` were copied in. Grade the submitted code and written answers; do not fail a student for an unverifiable file, dashboard, or video.
+- **Names are exact.** `Use exactly as written (they must match Week 9's tables and the Week 4 component)`: the tables `weather_raw` and `weather_enriched` and the columns `date`, `good_for_running`, `confidence`, `llm_summary`; the `WeatherClassifier` component and its `Prediction` result's `label`/`probability`; the model id `gpt-4o-mini`; and the function `call_with_retry`. `Example — adapt to your own values`: the chosen city, the exact prompt wording, and any sample values.
 
-**Part 1 — `warmup_11.py`:**
+**Part 1 — `warmup_10.py`:**
 
-- **Prefect Q1** — a comment distinguishing `@task` from `@flow`, and a reasoned answer on whether to decorate a pure in-memory C→F helper (no — it does no I/O and gains nothing from task tracking).
-- **Prefect Q2** — the single decorator line for a `call_api` task with 3 retries and a 30-second delay.
-- **Prefect Q3** — a comment on where in the Prefect UI to investigate the failed `transform` task and what information to expect (the task's logs and traceback).
-- **Production Q1** — a comment explaining `raise_for_status()` versus a manual status-code check, and what happens to downstream tasks on a 500 in each case.
-- **Production Q2** — a comment explaining what `upsert` with `on_conflict="date"` protects against on a crash-and-rerun, and what plain `insert` would do instead.
-- **Production Q3** — a task stub (decorator, signature accepting `enrichment_records`, and one `get_run_logger()` INFO line reporting the upserted count).
-- **Production Q4** — a comment on how the incremental check contributes to idempotency and the cost/time/correctness consequences of reprocessing all records.
+- **ML/LLM Q1** — a comment explaining what the ML classifier produces vs what the LLM produces, why each tool fits its role, and what breaks if they are swapped.
+- **ML/LLM Q2** — one sentence for each of the five tasks stating ML model / LLM / deterministic code, with a reason.
+- **ML/LLM Q3** — a comment explaining incremental processing and the cost/correctness consequences of reprocessing all records every run.
+- **Prompt Q1** — an alternative two-sentence system prompt (prediction, then reasoning), plus a comment on the validation change needed.
+- **Prompt Q2** — a `call_with_retry(client, messages, max_retries=3)` that retries on any exception with a 2-second wait and returns `None` on final failure, plus a comment on when to use it.
 
-**Part 2 — `etl_pipeline.py`:**
+**Part 2 — `transform_10.py`:**
 
-- **`extract` task** — `@task(retries=2, retry_delay_seconds=10)`; fetches full-year 2023 daily weather (the four variables) for the chosen city; uses `raise_for_status()`; converts the columnar response to row dictionaries; prints the record count; returns the list.
-- **`load_raw` task** — `@task(retries=2, retry_delay_seconds=5)`; upserts into `weather_raw` with `on_conflict="date"`; prints the upserted count.
-- **`transform` task** — `@task`; incremental check that skips dates already in `weather_enriched`; classifies the unprocessed records with the `WeatherClassifier` component (label + confidence); calls the OpenAI API for a one-sentence recommendation per record with graceful fallback on error; prints progress every 50 records; returns the enrichment records.
-- **`load_enriched` task** — `@task(retries=2, retry_delay_seconds=5)`; guards against an empty list (returns early); upserts into `weather_enriched` with `on_conflict="date"`; prints the upserted count.
-- **Flow** — `@flow(log_prints=True)` calling all four tasks in order and printing a final completion message.
-- **Running and verifying** — evidence (in the reflection/video) that the flow ran with all four tasks completed and both tables populated.
-- **Reflection** — `outputs/pipeline_run.md` (5–7 sentences) covering the first-run outcome and any fixes, what the Prefect UI showed and whether any task retried, an assessment of a few `llm_summary` rows, and one change for a daily scheduled deployment.
-- **Video** — a link at the top of `etl_pipeline.py` to a short video showing the pipeline running to completion, the Prefect UI with all four tasks completed and the transform logs, and the `weather_enriched` table with the `llm_summary` column.
+- **Step 1 — Incremental Read** — fetches `weather_raw`, fetches dates already in `weather_enriched`, determines which records still need processing, and prints a summary of the three counts.
+- **Step 2 — ML Transform** — creates a `WeatherClassifier` from the saved model and calls `predict()` on the unprocessed records, building enrichment records with `date`, `good_for_running` (from each `Prediction`'s `label`), and `confidence` (from its `probability`); prints a prediction summary.
+- **Step 3 — LLM Transform** — a system prompt and message function passing each day's features and prediction to `gpt-4o-mini`, adding an `llm_summary`; graceful error handling with a fallback string; a progress print every 50 records.
+- **Step 4 — Load** — upserts the enrichment records into `weather_enriched` and prints the number upserted.
+- **Step 5 — Verify** — prints the total row count, five sample rows (`date`, `good_for_running`, `confidence`, `llm_summary`), and the good-day count, plus a comment evaluating a strong and a weak LLM summary.
+- **Step 6 — Orchestrate with Prefect** — each stage (read, classify, enrich, load) is an `@task`, wired together by a `@flow(log_prints=True)` that runs and completes with every task marked completed. `transform_10.py` defines and runs this flow.
+- **Step 7 — Reflect** — a comment block answering the three questions (model transfer across cities, whether the LLM can override the classifier, and the main concern at 50,000 records).
+- **Video** — a link at the top of `transform_10.py` to a short video showing the flow running, the `weather_enriched` table with rows, and sample rows with recommendations.
 
 ### Optional Deliverables/Tasks
 
