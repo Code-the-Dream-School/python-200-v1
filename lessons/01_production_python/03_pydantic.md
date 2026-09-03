@@ -253,7 +253,7 @@ Neither temperature is suspicious on its own, since 14.8 and 24.1 are both ordin
 
 ## Nested Models: A Real API Response
 
-We can now handle the case that nested models are designed for. Below is what the Open-Meteo historical weather API actually returns. This is the API you will call in Weeks 3, 9, and 11:
+We can now handle the case that nested models are designed for. Below is what the Open-Meteo *daily* historical weather API actually returns. This is the API and response shape you will work with in Weeks 2, 3, 9, and 11:
 
 ```python
 api_response = {
