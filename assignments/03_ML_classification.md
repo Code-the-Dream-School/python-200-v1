@@ -1,389 +1,293 @@
 # Week 3 Assignments
 
-This week's assignments cover the week 3 material, including:
+This week's assignments cover the Week 3 material:
 
-- Data preprocessing: scaling, train/test splitting, and dimensionality reduction with PCA
-- k-Nearest Neighbors (KNN) and classifier evaluation
-- Cross-validation and hyperparameter tuning
-- Logistic Regression and regularization
+- Preprocessing in a `Pipeline`: scaling and one-hot encoding with a `ColumnTransformer`
+- k-Nearest Neighbors and choosing `k` with cross-validation
+- Logistic Regression, its coefficients, and its probabilities
+- Evaluating classifiers with accuracy, precision, recall, F1, and the confusion matrix
+- Saving and loading a trained model with `joblib`
 
-As with previous weeks, the warmup exercises are meant to build muscle memory for the core mechanics -- try to work through them without AI assistance. The mini-project will ask you to apply these tools in a more open-ended context.
+The warmup exercises build muscle memory for the core mechanics, so try to work through them without AI assistance. The mini-project asks you to build, evaluate, and **save** a real weather classifier. The model you save this week is the one you will wrap into a reusable component next week, so keep your files.
+
+---
 
 # Submission Instructions
 
-In your `python200-homework` repository, create a folder called `assignments_03/`. Inside that folder, create two files and an outputs directory:
+In your `python200-homework` repository, create a folder called `assignments_03/`. Inside it, build this structure:
 
-1. `warmup_03.py`  : for the warmup exercises
-2. `project_03.py` : for the mini-project
-3. `outputs/`      : for any plots or data files your code generates
+```text
+assignments_03/
+├── warmup_03.py                 <- Part 1: the warmup exercises
+├── weather_classification.csv   <- copied from the course repo (see below)
+├── train_classifier.py          <- Part 2: fetch, build, evaluate, save
+├── predict.py                   <- Part 2: load the saved model and predict
+├── models/                      <- your saved .pkl and metadata.json go here
+└── outputs/                     <- any plots your code saves
+```
 
-When finished, commit and open a PR as described in the [assignments README](https://github.com/Code-the-Dream-School/python-200/blob/75ba1ca1b7ed0156605d7e3ab94b30fdce9105c0/assignments/README.md).
+Copy `weather_classification.csv` from the course repo at `lessons/03_ML_classification/resources/weather_classification.csv` into your `assignments_03/` folder before you start. The warmups use it.
+
+Install this week's new package if you have not already (it installs with scikit-learn, so you likely have it):
+
+```bash
+uv pip install scikit-learn joblib
+```
+
+When finished, commit and open a PR as described in the [assignments README](README.md).
+
+**Primary submission**: A link to your open GitHub PR. Make sure your saved model files in `models/` are committed.
+
+---
 
 # Part 1: Warmup Exercises
 
-Put all warmup exercises in a single file: `warmup_03.py`. Use comments to mark each section and question (e.g. `# --- Preprocessing ---` and `# Q1`). Use `print()` to display all outputs.
+Put all warmup exercises in a single file: `warmup_03.py`. Use comments to mark each section and question (for example `# --- KNN ---` and `# Q1`). Use `print()` to display outputs and save any figures to `outputs/`.
 
-The first five sections use the Iris dataset; the PCA section has its own data-loading block. Run this setup block once at the top of your file:
+Run this setup block at the top of `warmup_03.py`.
 
 Use exactly as written:
 
 ```python
 import numpy as np
+import pandas as pd
 import matplotlib.pyplot as plt
 
-from sklearn.datasets import load_iris, load_digits
 from sklearn.model_selection import train_test_split, cross_val_score
-from sklearn.preprocessing import StandardScaler
-from sklearn.decomposition import PCA
+from sklearn.preprocessing import StandardScaler, OneHotEncoder
+from sklearn.compose import ColumnTransformer
+from sklearn.pipeline import Pipeline
 from sklearn.neighbors import KNeighborsClassifier
-from sklearn.tree import DecisionTreeClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import (
-    accuracy_score,
-    classification_report,
-    confusion_matrix,
-    ConfusionMatrixDisplay
+    accuracy_score, precision_score, recall_score, f1_score,
+    confusion_matrix, ConfusionMatrixDisplay, classification_report,
 )
+import joblib
 
-iris = load_iris(as_frame=True)
-X = iris.data
-y = iris.target
+df = pd.read_csv("weather_classification.csv")
+numeric = ["temperature_2m_max", "temperature_2m_min", "precipitation_sum", "wind_speed_10m_max"]
+X = df[numeric]
+y = df["good_for_running"]
+
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42, stratify=y
+)
 ```
 
-## Task 1: Preprocessing
+## Preprocessing
 
-### Task 1.1
+### Preprocessing Question 1
 
-Split `X` and `y` into training and test sets using an 80/20 split with `stratify=y` and `random_state=42`. Print the shapes of all four arrays.
+Fit a `StandardScaler` on `X_train` only, then transform both `X_train` and `X_test`. Print the mean of each column of the scaled training data (they should all be very close to 0). Add a comment explaining, in one sentence, why you fit the scaler on `X_train` only.
 
-### Task 1.2
+### Preprocessing Question 2
 
-Fit a `StandardScaler` on `X_train` and use it to transform both `X_train` and `X_test`. Print the mean of each column in `X_train_scaled` -- they should all be very close to 0. Add a comment explaining in one sentence why you fit the scaler on `X_train` only.
+The `season` column in the dataset is categorical. One-hot encode it with `OneHotEncoder(sparse_output=False)` and print the resulting array's shape and the category names from `encoder.get_feature_names_out()`. Add a comment: how many columns did the single `season` column become, and why is that number what it is?
 
-## Task 2: KNN
+### Preprocessing Question 3
 
-### Task 2.1
+Build a `ColumnTransformer` that applies a `StandardScaler` to the four numeric columns and a `OneHotEncoder` to `season`. Wrap it with a `LogisticRegression` in a `Pipeline`. Fit the pipeline on the training data (include `season` in your feature columns for this question) and print its test accuracy. Add a comment: what does the pipeline do automatically that you would otherwise have to do by hand?
 
-Build a `KNeighborsClassifier` with `n_neighbors=5`, fit it on the *unscaled* training data (`X_train`), and predict on the test set. Print the accuracy score and the full classification report.
+## KNN
 
-### Task 2.2
+### KNN Question 1
 
-Repeat Task 2.1 using the *scaled* data (`X_train_scaled`, `X_test_scaled`). Print the accuracy score. Add a comment: does scaling improve performance, hurt it, or make no difference? Why might that be for this particular dataset?
+Build a `Pipeline` of `StandardScaler` and `KNeighborsClassifier(n_neighbors=5)`. Fit it on the training data and print the test accuracy and the full classification report.
 
-### Task 2.3
+### KNN Question 2
 
-Using `cross_val_score` with `cv=5`, evaluate the k=5 KNN model on the unscaled training data. Print each fold score, the mean, and the standard deviation. Add a comment: is this result more or less trustworthy than a single train/test split, and why?
+Loop over `k` values `[1, 3, 5, 7, 9, 11, 15, 21]`. For each, build the scaled pipeline and compute the mean 5-fold cross-validation accuracy on the **training** data. Print each `k` with its mean CV score. Add a comment naming the `k` you would choose and why.
 
-### Task 2.4
+### KNN Question 3
 
-Loop over k values `[1, 3, 5, 7, 9, 11, 13, 15]`. For each, compute 5-fold cross-validation accuracy on the unscaled training data and print k and the mean CV score. Add a comment identifying which k you would choose and why.
+Fit KNN once *without* scaling (on raw `X_train`) and once *with* scaling, both using `n_neighbors=5`. Print both test accuracies. Add a comment: did scaling help, and why would scaling matter for a distance-based model?
 
-## Task 3: Classifier Evaluation
+## Logistic Regression
 
-### Task 3.1
+### Logistic Regression Question 1
 
-Using your predictions from Task 2.1, create a confusion matrix and display it with `ConfusionMatrixDisplay`, passing `display_labels=iris.target_names`. Save the figure to `outputs/knn_confusion_matrix.png`. Add a comment: which pair of species does the model most often confuse (if any)?
+Build a `Pipeline` of `StandardScaler` and `LogisticRegression(max_iter=1000)`. Fit it and print the test accuracy, precision, recall, and F1 (for the "good" class).
 
-## Task 4: The sklearn API -- Decision Trees
+### Logistic Regression Question 2
 
-### Task 4.1
+Print each feature name alongside its coefficient from the fitted logistic regression (use `pipeline.named_steps["..."].coef_[0]`). Add a comment: which features push most strongly toward "skip," and does that match your intuition about running weather?
 
-Create a `DecisionTreeClassifier(max_depth=3, random_state=42)`, fit it on the unscaled training data, and predict on the test set. Print the accuracy score and classification report. Add a comment comparing the Decision Tree accuracy to KNN. Then add a second comment: given that Decision Trees don't rely on distance calculations, would scaled vs. unscaled data affect the result?
+### Logistic Regression Question 3
 
-## Task 5: Logistic Regression and Regularization
+Use `predict_proba` to print the probability of "good" for the first five test days, rounded to two decimals. Add a comment: what does a probability near 0.5 tell you about the model's confidence for that day?
 
-### Task 5.1
+## Evaluation
 
-Train three logistic regression models on the scaled Iris data, identical in every way except for the `C` parameter: `C=0.01`, `C=1.0`, and `C=100`. Use `max_iter=1000` and `solver='liblinear'` for all three. The `LogisticRegression` needs to wrapped with `OneVsRestClassifier` to handle three classes. For each model, print the `C` value and the total size of all coefficients using `np.abs(model.coef_).sum()`. Add a comment: what happens to the total coefficient magnitude as `C` increases? What does this tell you about what regularization is doing?
+### Evaluation Question 1
 
-## Task 6: PCA
+For your logistic regression pipeline, build a confusion matrix on the test set and display it with `ConfusionMatrixDisplay`, using `display_labels=["skip", "good"]`. Save the figure to `outputs/logreg_confusion_matrix.png`. Add a comment: how many false positives and how many false negatives did the model make, and which kind of error would matter more for a running app?
 
-> **Concept**
->
-> The digits dataset is a collection of 1797 small handwritten digit images, each 8x8 pixels, bundled directly with scikit-learn (no download needed). Each image is stored as a flat array of 64 pixel values, so each sample lives in a 64-dimensional space -- a natural fit for dimensionality reduction. Pixel values range from 0 to 16, with higher values representing brighter pixels. The target labels are the digits 0 through 9.
+## joblib
 
-Add this data-loading block right before your PCA questions in `warmup_03.py`. Use exactly as written:
+### joblib Question 1
+
+Take your fitted logistic regression pipeline and save it to `models/warmup_model.pkl` with `joblib.dump`. Load it back with `joblib.load` and confirm it produces identical predictions:
 
 ```python
-digits = load_digits()
-X_digits = digits.data    # 1797 images, each flattened to 64 pixel values
-y_digits = digits.target  # digit labels 0-9
-images   = digits.images  # same data shaped as 8x8 images for plotting
+loaded = joblib.load("models/warmup_model.pkl")
+assert (loaded.predict(X_test) == pipeline.predict(X_test)).all()
+print("Predictions match.")
 ```
 
-### Task 6.1
+Add a comment: what would go wrong if you had saved only the `LogisticRegression` step without the scaler, then called `.predict()` on raw data?
 
-Print the shape of `X_digits` and `images`. Then create a 1-row subplot showing one example of each digit class (0-9), using `cmap='gray_r'` with each digit's label as the title. Save the figure to `outputs/sample_digits.png`. (`gray_r` is the reversed grayscale colormap -- it renders higher pixel values as darker, so digits appear as dark ink on a light background, which is more readable than the default.)
+---
 
-### Task 6.2
+# Part 2: Mini-Project — Build and Deploy a Weather Classifier
 
-Fit `PCA()` on `X_digits` (with no `n_components` argument) then get the scores with `scores = pca.transform(X_digits)`. Scores tell you how strongly each component is weighted for each sample -- `scores[i, 0]` is the weighting for PC1 in sample i, `scores[i, 1]` is the weighting for PC2, and so on.
+You will build a classifier that predicts whether a day is good for running, evaluate it, and save it to disk so it can be used later. In Week 4 you will wrap this saved model into a reusable component, and in Week 10 a cloud pipeline will load it. This is the beginning of the end-to-end pipeline the course is building toward.
 
-Use `scores[:, 0]` and `scores[:, 1]` to make a scatter plot, coloring each point by its digit label and adding a colorbar. Example -- adapt to your own variable names if they differ:
+Split your work across two files: `train_classifier.py` (fetch, label, build, evaluate, save) and `predict.py` (load and predict). Save any plots to `outputs/`.
 
-```python
-scatter = plt.scatter(scores[:, 0], scores[:, 1], c=y_digits, cmap='tab10', s=10)  # c = color array
-plt.colorbar(scatter, label='Digit')
-```
+## File 1: `train_classifier.py`
 
-Save the figure to `outputs/pca_2d_projection.png`. Add a comment: do same-digit images tend to cluster together in this 2D space?
+### Task 1: Fetch the Data
 
-### Task 6.3
+Use the free Open-Meteo historical API (no key required) to download one year of daily weather for a city of your choice. Use these four daily variables: `temperature_2m_max`, `temperature_2m_min`, `precipitation_sum`, and `wind_speed_10m_max_10m_max`.
 
-Using the PCA object you fit in Task 6.2, plot cumulative explained variance vs. number of components using `np.cumsum(pca.explained_variance_ratio_)`. Save to `outputs/pca_variance_explained.png`. Add a comment: approximately how many components do you need to explain 80% of the variance?
-
-### Task 6.4
-
-> **Concept**
->
-> A reconstruction is built by starting from the mean and adding each component weighted by its score. Here is the same idea generalized to n components -- add this function to your file. Use exactly as written:
+Example — adapt the latitude, longitude, and dates to your city:
 
 ```python
-def reconstruct_digit(sample_idx, scores, pca, n_components):
-    """Reconstruct one digit using the first n_components principal components."""
-    reconstruction = pca.mean_.copy()
-    for i in range(n_components):
-        reconstruction = reconstruction + scores[sample_idx, i] * pca.components_[i]
-    return reconstruction.reshape(8, 8)
-```
+import requests
+import pandas as pd
 
-Using this function, the PCA object, and the scores from Task 6.2, reconstruct the first 5 digits in `X_digits` using reconstruction through principal components n = 2, 5, 15, and 40.
-
-Build a grid of subplots where rows correspond to each n value and columns show those 5 digits. Add an "Original" row at the top (use `images[i]`, which is already shaped as (8, 8)). Save to `outputs/pca_reconstructions.png`.
-
-Add a comment: at what n do the digits become clearly recognizable, and does that match where the variance curve levels off?
-
-# Part 2: Mini-Project -- Spam or Ham? A Classifier Shootout
-
-This project uses the [Spambase dataset](https://archive.ics.uci.edu/dataset/94/spambase) from the UCI Machine Learning Repository -- the same dataset introduced in the logistic regression lesson. Each row represents an email. The 57 numeric features describe measurable properties: how often certain words appear, how often certain characters appear, or statistics about runs of capital letters. The target variable is `spam_label` (1 = spam, 0 = not spam).
-
-Your goal is to build the best spam classifier you can, understand why different models behave differently on this dataset, and package your best model into a reusable prediction pipeline.
-
-Put all code in `project_03.py` and save any figures to `outputs/`.
-
-## Task 1: Load and Explore
-
-### Task 1.1
-
-Load the Spambase dataset. Use exactly as written:
- 
-```python
-url = "https://archive.ics.uci.edu/ml/machine-learning-databases/spambase/spambase.data"
-response = requests.get(url)
+url = "https://archive-api.open-meteo.com/v1/archive"
+params = {
+    "latitude": 35.23,
+    "longitude": -80.84,
+    "start_date": "2023-01-01",
+    "end_date": "2023-12-31",
+    "daily": [
+        "temperature_2m_max",
+        "temperature_2m_min",
+        "precipitation_sum",
+        "wind_speed_10m_max_10m_max",
+    ],
+    "timezone": "America/New_York",
+}
+response = requests.get(url, params=params)
 response.raise_for_status()
- 
-df = pd.read_csv(BytesIO(response.content), header=None)
-df.columns = COLUMN_NAMES  # see the logistic regression lesson for the full column list
-```
- 
-`COLUMN_NAMES` is the 58-item list from the [logistic regression lesson](https://github.com/Code-the-Dream-School/python-200/blob/75ba1ca1b7ed0156605d7e3ab94b30fdce9105c0/lessons/03_classification/04_logistic_regression.md#loading-the-dataset) -- copy it into your file rather than retyping it. The last column, `spam_label`, is your target (1 = spam, 0 = not spam).
-
-### Task 1.2
-
-Once it is loaded, take some time to understand what you are working with. How many emails are in the dataset? How balanced are the two classes? What does that balance (or imbalance) mean for how you should interpret a raw accuracy score?
-
-### Task 1.3
-
-Explore how a few key features differ between spam and ham. For each of `word_freq_free`, `char_freq_!`, and `capital_run_length_total`, create a boxplot showing the distribution of that feature for spam emails versus ham emails. Save them to `outputs/`. What do you notice? Are the differences between classes dramatic or subtle?
-
-### Task 1.4
-
-Look at the raw scale of the features more broadly. Notice that many emails have a value of zero for most word-frequency features -- most emails do not contain the word "free" at all. What does this heavy skew toward zero tell you about the data? Why does the numeric scale vary so dramatically across features (some are tiny fractions, others reach into the thousands)? Why might that matter for some of the models you are about to build?
-
-## Task 2: Prepare Your Data
-
-### Task 2.1
-
-Before building any models, prepare your data for the experiments in Task 3. You will need a train/test split and will need to think about how to handle the feature scales you noticed in Task 1. Document your choices in comments.
-
-### PCA preprocessing
-
-> **Concept**
->
-> Not every classifier benefits from dimensionality reduction. Decision trees and random forests split on feature thresholds -- they are insensitive to feature scale or correlation, so PCA is unlikely to help them. KNN and logistic regression are different: both operate in a space where feature magnitudes matter and can benefit from reduced dimensionality.
->
-> One rule applies whenever you use PCA: always scale the data first. PCA finds directions of maximum variance, so features with larger raw values will dominate unless you standardize first -- the same reason scaling is often used for KNN. For Spambase, where word frequencies are tiny fractions and `capital_run_length_total` can reach the thousands, this ordering is essential.
->
-> Fit PCA on the training data only -- same reason as the scaler: fitting on all the data lets test-set information leak into the components.
-
-### Task 2.2
-
-Fit PCA on your scaled training data:
-
-```python
-pca = PCA()
-pca.fit(X_train_scaled)
+df = pd.DataFrame(response.json()["daily"])
+df["date"] = pd.to_datetime(df["time"])
+df = df.drop("time", axis=1)
 ```
 
-Plot the cumulative explained variance, save it to `outputs/`, and print `n` -- the number of components where it first reaches 90%.
+Print the shape and the first few rows, and add a comment noting which city you chose.
 
-### Task 2.3
+### Task 2: Engineer the Label
 
-With `n` determined, transform both sets and slice to the first `n` components:
+Create a `good_for_running` column that is 1 when a day is good and 0 otherwise. A day is good when the high is between 7 and 26 degrees, the low is at least 0, precipitation is under 3 mm, and the maximum wind is under 30 km/h. You may adjust these thresholds for your climate, but document any change in a comment.
 
-```python
-X_train_pca = pca.transform(X_train_scaled)[:, :n]
-X_test_pca  = pca.transform(X_test_scaled)[:, :n]
-```
+Print the class balance (how many good days and how many skip days). Add a comment: what fraction of days are good, and does that seem reasonable for your city's climate? If your data is very imbalanced, note which metrics will matter most because of it.
 
-Keep both the full scaled arrays and the PCA-reduced arrays -- you will use both in Task 3.
+### Task 3: Build and Evaluate a KNN Classifier
 
-## Task 3: A Classifier Comparison
+Split the data into training and test sets (80/20, `random_state=42`, `stratify` on the label). Build a `Pipeline` of `StandardScaler` and `KNeighborsClassifier`. Use 5-fold cross-validation on the training data to choose `k` from at least five values, then fit your chosen model and print its test accuracy and full classification report.
 
-### Task 3.1
+### Task 4: Build and Evaluate a Logistic Regression Classifier
 
-Build and evaluate the following five classifiers. For each, print the accuracy and the full classification report.
+Build a `Pipeline` of `StandardScaler` and `LogisticRegression(max_iter=1000)`. Fit it and print its test accuracy, precision, recall, F1, and classification report. Then print each feature's coefficient and add a comment interpreting them: which conditions most strongly push a day toward "skip"?
 
-- `KNeighborsClassifier(n_neighbors=5)` trained on the *unscaled* data
-- `KNeighborsClassifier(n_neighbors=5)` trained on the *scaled* data, and again on the *PCA-reduced* data from Task 2 -- compare the two
-- `DecisionTreeClassifier(random_state=42)` -- before settling on a final depth, try `max_depth` values of `3`, `5`, `10`, and `None` (unlimited). For each, print both the training accuracy and the test accuracy. What do you notice as depth increases? What does that tell you about overfitting? Pick the depth you would use in production and add a comment explaining your reasoning. Then, using your chosen depth, print the accuracy and full classification report as you did for the other classifiers.
-- `RandomForestClassifier` (see Concept box below)
-- `LogisticRegression(C=1.0, max_iter=1000, solver='liblinear')` trained on the *scaled* data, and again on the *PCA-reduced* data -- compare the two
+### Task 5: Compare and Choose
 
-### Task 3.2
+Compare your two classifiers. In a comment, answer:
 
-After you have results for all your classifiers, write a comment summarizing what you see. Which model performs best? For the classifiers where you compared PCA vs. non-PCA, which worked better -- and does that match your hypothesis from Task 2? For a spam filter specifically, is accuracy the right metric to optimize -- or would you rather minimize false positives (legitimate email marked as spam) or false negatives (spam that gets through)? Take a position and defend it.
+- Which model had higher accuracy on your data?
+- For a running app, is accuracy the metric you care about most, or would you weigh precision or recall more heavily? Explain in terms of false positives (sent out on a bad day) and false negatives (missed a good day).
+- Which model will you deploy, and why? Consider not only the scores but also model size, prediction speed, interpretability, and whether you want probability confidence scores. Either choice can be correct if you justify it.
 
-### Task 3.3
+### Task 6: Save the Model
 
-For your best-performing classifier, create a confusion matrix using `ConfusionMatrixDisplay` and save it to `outputs/best_model_confusion_matrix.png`. Given the costs described in Task 3.2, which type of error does your best model make more often?
+Save your chosen fitted pipeline to `models/weather_classifier.pkl` with `joblib.dump`. Save a metadata file to `models/weather_classifier_metadata.json` containing at least: the Python and scikit-learn versions, the feature names in order, the label rule you used, your city, and the test accuracy and F1 of the saved model. Print a confirmation message when both files are written.
 
-### A note on Decision Trees and Random Forests
+## File 2: `predict.py`
 
-For a visual introduction, this [StatQuest video (~8 min)](https://www.youtube.com/watch?v=7VeUPuFGJHk) is worth watching before or after you work through this section.
+This script simulates using the model in production. It must contain **no training code**: no `fit`, no cross-validation, no data fetching from the API.
 
-> **Concept**
->
-> Think about how you personally decide whether an email is spam:
->
-> "Does it use words like *free* or *winner*?"
-> "Are there long blocks of capital letters?"
-> "Does it contain lots of dollar signs?"
->
-> This is exactly how a decision tree works -- a sequence of yes/no questions, where each answer leads to the next question, until the tree reaches a prediction. Unlike KNN, which measures distances between data points, a tree examines one feature at a time and asks whether it crosses a threshold. This means trees do not need feature scaling and they produce rules that are straightforward to inspect.
->
-> The tree learns these questions from data. At each step, it tries many possible splits and picks the one that creates the most predictive split -- where most examples belong to the same class. The measure of purity is called *Gini impurity*: high when a group is evenly mixed (the tree is uncertain), low when one class dominates (the tree is confident). Before a good split, a group might be evenly mixed -- Gini impurity is high:
->
-> ```text
-> Before split (high Gini impurity -- very uncertain):
-> Spam:     ██████████  Not spam: ██████████
-> ```
->
-> After a well-chosen split (say, on whether `char_freq_$` is high), the two groups become much more certain -- Gini impurity drops:
->
-> ```text
-> After splitting on char_freq_$ (low Gini impurity -- much more certain):
-> Group A ($ is rare):
-> Spam: ██  Not spam: ████████████████
-> Group B ($ is frequent):
-> Spam: ████████████████  Not spam: ██
-> ```
->
-> The tree keeps splitting until the groups are pure enough -- or until it reaches its *depth limit*, meaning the maximum number of questions it is allowed to ask before it must make a prediction.
->
-> A tree with no limit will keep splitting until every training example has its own leaf, memorizing the training data rather than learning general patterns. You will see this overfitting directly when you compare train and test accuracy across different `max_depth` values in Task 3.1.
->
-> Even with a depth limit, a single tree is still fragile -- small changes in the training data can produce a very different tree. A *Random Forest* addresses this in a way that echoes cross-validation: instead of one tree trained on the full dataset, it trains hundreds of trees, each on a different random sample of the training examples and a random subset of features. Just as cross-validation averages results across multiple data splits to get a more reliable estimate, a Random Forest averages predictions across many trees to get a more reliable answer -- that diversity is baked into the model itself. No single tree is authoritative, but the crowd as a whole tends to get it right.
+### Task 7: Load and Predict
 
-Example -- adapt variable names to match your own code:
+Load the pipeline from `models/weather_classifier.pkl` and the metadata from the JSON file. Print the model's key metadata (city, features, test accuracy). Then build a small DataFrame of at least four hypothetical days covering a clearly good day, a clearly bad day, and at least one borderline day, using the feature names from the metadata so the columns match. For each day, print the four inputs, the predicted label (good or skip), and the model's confidence (the probability of "good").
 
-```python
-from sklearn.ensemble import RandomForestClassifier
+### Task 8: Reflect
 
-rf = RandomForestClassifier(n_estimators=100, random_state=42)
-rf.fit(X_train, y_train)
-```
+At the bottom of `predict.py`, in a comment block, answer:
 
-> **Concept**
->
-> Random forests are one of the most practically useful classifiers in the scikit-learn toolkit -- they have won countless Kaggle competitions and remain a go-to choice for tabular data in production. Training 100 trees takes noticeably longer than training one, so expect a longer wait than you saw with the Decision Tree. They also tend to generalize well without needing extensive cross-validation -- the internal averaging across many trees already provides a form of stability.
+1. Pick your borderline day. What probability did the model give it? Would you call the model confident or uncertain, and how would you handle a day where it predicts 0.52?
+2. `predict.py` has no training code. What would break if someone ran `predict.py` before `train_classifier.py` had ever been run? How could you make the error message more helpful?
+3. In Week 10 this model will run inside a cloud pipeline that classifies each day's weather automatically. Name one thing about your current `predict.py` that would need to change to support that.
 
-### Task 3.4
+---
 
-Both the Decision Tree and the Random Forest expose a `.feature_importances_` attribute. After building both, print the top 10 most important features for each and save a bar chart of the Random Forest importances to `outputs/feature_importances.png`. Do the two models agree on which features matter most? Do the results match your intuition about what makes an email spam?
+# Optional Extensions
 
-In Task 4 you will cross-validate all your models -- the variance across folds for the Random Forest should be noticeably lower than for the Decision Tree.
+## Extension A (Optional): Add Season as a Feature (Low)
 
-## Task 4: Cross-Validation
+Add a `season` column derived from the month, and use a `ColumnTransformer` to scale the numeric features and one-hot encode `season` inside your pipeline. Does adding season change your test scores? Add a comment with what you found, and a possible reason.
 
-> **Concept**
->
-> A single train/test split can give you a misleading picture -- you might have gotten lucky (or unlucky) with how the data was divided. Cross-validation gives a more reliable estimate of how well a model generalizes to unseen data.
+## Extension B (Optional): A Second City (Moderate)
 
-### Task 4.1
+Train your classifier on one city and evaluate it on a different city's data with a very different climate. Does accuracy drop? Add a comment explaining why a model trained on one climate might not transfer to another.
 
-Using `cross_val_score` with `cv=5`, run cross-validation on the training data for each of your classifiers from Task 3. For each, print the mean and standard deviation of the fold scores. Which model is the most accurate? Which is the most stable (lowest variance across folds)? Does the ranking match what you saw with the single train/test split?
+## Extension C (Optional): Tune Regularization (Moderate)
 
-## Task 5: Building a Prediction Pipeline
+For your logistic regression pipeline, use cross-validation to compare several values of `C` (for example `0.01, 0.1, 1.0, 10.0, 100.0`). Does the best `C` improve your F1 over the default? Add a comment with your finding.
 
-> **Concept**
->
-> So far you have been managing preprocessing manually: fit the scaler on training data, transform training data, transform test data, then pass the results to a classifier. This works, but it requires careful bookkeeping -- it is easy to forget a step, apply transformations in the wrong order, or accidentally leak information from the test set into the scaler.
->
-> A pipeline is a series of connected steps where the output of one becomes the input of the next -- the same idea introduced in the Week 1 pipelines lesson, brought directly into model building here. scikit-learn's `Pipeline` class is defined as a list of *named steps*, where each step is a `("name", object)` pair. The name is a label you choose; the object is any sklearn transformer or model. Steps run in the order they are listed.
+Good luck. Keep your saved model files — you will reuse them in Week 4.
 
-Example -- adapt variable and step names to your own code:
+---
 
-```python
-from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import StandardScaler
-from sklearn.neighbors import KNeighborsClassifier
+<details>
+<summary>Rubric (for AirHub reviewer and mentors)</summary>
 
-knn5_pipeline = Pipeline([
-    ("scaler",     StandardScaler()), # name, object pattern
-    ("classifier", KNeighborsClassifier(n_neighbors=5))
-])
-```
+### Required Deliverables/Tasks
 
-> **Concept**
->
-> Once built, a pipeline behaves like any other sklearn model. When you call `knn5_pipeline.fit(X_train, y_train)`, it fits the scaler on the training data and passes the scaled result to the classifier. When you call `knn5_pipeline.predict(X_test)`, it applies the same scaling -- learned from training data only -- to the test data before predicting. No extra steps required.
+**General grading notes:**
 
-```python
-knn5_pipeline.fit(X_train, y_train)
-y_pred = knn5_pipeline.predict(X_test)
-```
+- **Mini-project numbers vary by student.** The student chooses their own city and year, so class balance, accuracy, precision, recall, F1, and coefficients will differ. Do not fail a student for numbers that differ from any reference. Grade whether the workflow is correct and the interpretation is reasonable.
+- **Either model may be deployed.** In Task 5, both KNN and logistic regression are defensible choices for deployment. Do not fail a student for choosing either one, as long as they justify it.
+- **File paths and figure names are conventions, not pass/fail.** The reviewer cannot see the filesystem. Do not fail a student for a differently named plot or a different directory, as long as the described file is produced.
+- **Sample values are examples.** `Example — adapt to your own layout`: the latitude/longitude/dates in Task 1 and the city choice. `Use exactly as written`: the warmup setup block, because the later warmup questions depend on those variable names.
 
-> **Concept**
->
-> In scikit-learn, evaluation is typically handled outside the pipeline. The pipeline's job is preprocessing and prediction; what you do with those predictions -- `classification_report`, `accuracy_score`, `ConfusionMatrixDisplay` -- is up to you and happens after `predict()`.
->
-> One exception is that a pipeline does have a built-in method for calculating accuracy: `pipeline.score(X_test, y_test)`. `score()` does quite a bit in one call: it runs `X_test` through the pipeline, generates predictions, and compares them against `y_test`, returning accuracy.
+**Part 1 — `warmup_03.py`** (uses the provided `weather_classification.csv`):
 
-### PCA as a pipeline step
+- **Preprocessing Q1** — a `StandardScaler` fit on `X_train` only and applied to both sets; scaled-train column means printed (near 0); a comment on why the scaler is fit on training data only.
+- **Preprocessing Q2** — `season` one-hot encoded; the resulting shape and category names printed; a comment on the number of new columns.
+- **Preprocessing Q3** — a `ColumnTransformer` (scale numeric, one-hot `season`) inside a `Pipeline` with logistic regression, fit and test accuracy printed; a comment on what the pipeline automates.
+- **KNN Q1** — a scaled KNN pipeline (`n_neighbors=5`); test accuracy and classification report printed.
+- **KNN Q2** — cross-validation over the listed `k` values with mean scores printed; a comment choosing a `k`.
+- **KNN Q3** — unscaled vs scaled KNN accuracy printed; a comment on whether scaling helped and why it matters for a distance-based model.
+- **Logistic Regression Q1** — a scaled logistic regression pipeline; accuracy, precision, recall, F1 printed.
+- **Logistic Regression Q2** — each feature's coefficient printed; a comment interpreting which features push toward "skip."
+- **Logistic Regression Q3** — `predict_proba` probabilities for the first five test days printed; a comment on what a probability near 0.5 means.
+- **Evaluation Q1** — a confusion matrix displayed and saved to `outputs/`; a comment on the counts of false positives and false negatives and which matters more.
+- **joblib Q1** — the pipeline saved and reloaded, with an assertion that predictions match; a comment on why saving only the classifier (without the scaler) would fail.
 
-> **Concept**
->
-> Adding PCA to a pipeline is straightforward -- just insert it as a step between the scaler and the classifier, using the number of components you chose in Task 2.
+**Part 2 — `train_classifier.py`:**
 
-Example -- adapt to your own chosen `n_components` and step names:
+- **Task 1** — daily weather fetched from Open-Meteo (any city/year); shape and first rows printed; a comment naming the city.
+- **Task 2** — a `good_for_running` label engineered from the thresholds; class balance printed; a comment on the fraction of good days.
+- **Task 3** — a scaled KNN pipeline with `k` chosen by cross-validation; test accuracy and classification report printed.
+- **Task 4** — a scaled logistic regression pipeline; accuracy/precision/recall/F1 and classification report printed; coefficients printed and interpreted in a comment.
+- **Task 5** — a written comparison covering which model scored higher, the false-positive vs false-negative trade-off for a running app, and a justified deployment choice.
+- **Task 6** — the chosen pipeline saved to `models/weather_classifier.pkl` and a metadata JSON saved with versions, feature names, label rule, city, and test scores; a confirmation printed.
 
-```python
-from sklearn.decomposition import PCA
+**Part 2 — `predict.py`:**
 
-pca_pipeline = Pipeline([
-    ("scaler",     StandardScaler()),
-    ("pca",        PCA(n_components=...)),  # use your n_components from Task 2
-    ("classifier", LogisticRegression(C=1.0, max_iter=1000, solver='liblinear'))
-])
-```
+- **Task 7** — loads the saved pipeline and metadata (no training code), prints key metadata, and predicts label and confidence for at least four hypothetical days including a borderline one.
+- **Task 8** — a reflection comment block answering the three questions (borderline probability and how to handle 0.52; what breaks if `predict.py` runs before training and how to improve the error; one change needed for the Week 10 pipeline).
 
-> **Concept**
->
-> The pipeline handles the correct ordering automatically -- the scaler and PCA both fit on training data only, and the same transformations are applied in sequence to the test set when you call `predict`.
+### Optional Deliverables/Tasks
 
-### Task 5.1
+**Do not fail a student for omitting any of these.** They are marked "(Optional)".
 
-Build two pipelines: one for your best tree-based classifier and one for your best non-tree-based classifier. For each, fit on the training data and print the full classification report on the test set. Confirm the results match your earlier manual approach.
+- **Extension A (Optional)** — `season` added via a `ColumnTransformer`, with a comment on whether it changed the scores.
+- **Extension B (Optional)** — train on one city, evaluate on another, with a comment on transfer across climates.
+- **Extension C (Optional)** — cross-validated comparison of several `C` values, with a comment on whether the best `C` improved F1.
 
-### Task 5.2 (Optional)
-
-If your Task 3 results showed that PCA improved your non-tree model, add it as a step in that pipeline and compare the classification report to your non-PCA version. State in a comment which one you are keeping and why. This task is optional because it depends on your own Task 3 results -- if PCA did not help your non-tree model, skip it and note that in a comment instead.
-
-## Task 6: Reflection
-
-### Task 6.1
-
-Comment on your pipelines: do they have the same structure? Why or why not? What is the practical value of packaging a model this way, especially when handing it off to someone else or deploying it?
-
-Good luck on this mini-project!
+</details>
