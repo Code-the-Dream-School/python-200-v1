@@ -1,24 +1,24 @@
 # Lessons
 
-As described on the [course home page](../README.md), Python 200 is organized into four
-modules covering data analysis, machine learning, AI, and cloud computing. This page
+As described on the [course home page](../README.md), Python 200 covers production Python,
+machine learning, AI, and cloud computing. This page
 is your home base for the lessons themselves -- you will find links to content for each week below, and instructions for setting up your development environment further down.
 
 ## Lessons by week
 
-1. [Week 1: Introduction to Analysis](01_analysis_intro/README.md)
-2. [Week 2: Introduction to Machine Learning](02_ML_intro/README.md)
-3. [Week 3: Classification](03_ML_classification/README.md)
-4. [Week 4: Applied ML](04_applied_ML/README.md)
-5. [Week 5: Introduction to AI and LLMs](05_AI_intro/README.md)
-6. [Week 6: Retrieval-Augmented Generation (RAG)](06_AI_augmentation/README.md)
-7. [Week 7: AI Agents](07_AI_agents/README.md)
-8. [Week 8: Introduction to Cloud](08_cloud_intro/README.md)
-9. [Week 9: Data in the Cloud](09_cloud_AI/README.md)
-10. [Week 10: LLMs in Pipelines](10_cloud_ML/README.md)
-11. [Week 11: Cloud ETL](11_cloud_ETL/README.md)
+1. [Week 1: Production Python](01_production_python.md)
+2. [Week 2: Supervised Machine Learning — Regression](02_ML_intro.md)
+3. [Week 3: Classification and Model Deployment](03_ML_classification.md)
+4. [Week 4: From Model to Reusable Component](04_applied_ML.md)
+5. [Week 5: Introduction to AI](05_AI_intro.md)
+6. [Week 6: Augmenting AI: From Memory to Retrieval](06_AI_augmentation.md)
+7. [Week 7: AI Agents](07_AI_agents.md)
+8. [Week 8: Introduction to Cloud Computing](08_cloud_intro.md)
+9. [Week 9: Data in the Cloud](09_cloud_AI.md)
+10. [Week 10: LLMs in Pipelines](10_cloud_ML.md)
+11. [Week 11: Cloud ETL](11_cloud_ETL.md)
 
-Each week of content is in its own directory and includes multiple shorter lessons in individual markdown files. Every week's README provides a brief introduction to the week's topics and a table of contents for the lessons. For each week, we recommend that you start with the README to get your bearings, then work through the lessons in order.
+Each week's lessons are in their own directory, split into multiple shorter lessons in individual markdown files. The linked overview page for each week (above) gives a brief introduction to the week's topics and a table of contents for its lessons. For each week, we recommend that you start with the overview to get your bearings, then work through the lessons in order.
 
 > Tip: to read Markdown files with full formatting in VS Code, open the file and press
 > `Ctrl+Shift+V` (Windows/Linux) or `Cmd+Shift+V` (Mac), or click the preview icon in
@@ -106,10 +106,10 @@ We actively maintain this environment and will update `requirements.txt` as need
 Lessons in this course are written as Markdown files (`.md`), which are easy to read in
 GitHub and in VS Code. When you want to run the code interactively, you can convert a
 lesson to a Jupyter notebook using [jupytext](https://jupytext.readthedocs.io/), which is
-included in the course environment. For instance, to convert the first pandas lesson to a Jupyter notebook:
+included in the course environment. For instance, to convert the first Week 1 lesson to a Jupyter notebook:
 
 ```bash
-jupytext --to notebook --output ~/p200_working/01_pandas.ipynb lessons/01_analysis_intro/01_pandas.md
+jupytext --to notebook --output ~/p200_working/01_classes.ipynb lessons/01_production_python/01_classes.md
 ```
 
 This creates a `.ipynb` file in your working directory that you can open in JupyterLab or VS Code.
