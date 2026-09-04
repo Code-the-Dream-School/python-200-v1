@@ -452,7 +452,7 @@ Follow the "Persistent database semantic RAG using LlamaIndex" section of the le
 Do not fail a student for omitting any of these. All three appear under "Optional Extensions" and are marked `(Optional)` in their headings.
 
 - **Extension A (Optional) — Side-by-Side Comparison** — build a keyword RAG system with `simple_keyword_retrieval` over the Groundwork docs, run the five project queries through both keyword and LlamaIndex systems, print responses side by side, and comment comparing them. Document-loading path is `Example — adapt to your own values`.
-- **Extension C (Optional) — Add a New Document** — write a new one-page Groundwork document, add it to the docs folder, rebuild the index, verify the assistant can answer about it, and comment on what was added, the test query/result, and why this shows a RAG advantage over fine-tuning. The document content is the student's own.
-- **Extension D (Optional) — Persistent Vector Store with pgvector** — replace the in-memory store with a `PGVectorStore` backed by a PostgreSQL/pgvector container, and comment comparing persistent vs. in-memory. Requires Docker; do not penalize students who skip it (the assignment says to skip if Docker is unavailable).
+- **Extension B (Optional) — Add a New Document** — write a new one-page Groundwork document, add it to the docs folder, rebuild the index, verify the assistant can answer about it, and comment on what was added, the test query/result, and why this shows a RAG advantage over fine-tuning. The document content is the student's own.
+- **Extension C (Optional) — Persistent Vector Store with pgvector** — replace the in-memory store with a `PGVectorStore` backed by a PostgreSQL/pgvector container, and comment comparing persistent vs. in-memory. Requires Docker; do not penalize students who skip it (the assignment says to skip if Docker is unavailable).
 
 </details>
