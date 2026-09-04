@@ -2,7 +2,7 @@
 
 ## Learning Objective
 
-AI is everywhere -- from predicting what you'll watch next to diagnosing diseases. At the heart of it all lies machine learning, the engine that helps systems learn from data. Before we dive deep into algorithms, it's important to see where ML fits in the bigger picture and why it matters in today's world.
+AI is everywhere -- from predicting what you will watch next to diagnosing diseases. At the heart of it all lies machine learning, the engine that helps systems learn from data. Before we dive deep into algorithms, it is important to see where ML fits in the bigger picture and why it matters in today's world.
 
 Before we dive into coding with scikit-learn or building real models, this lesson serves as a big-picture, conceptual overview of where ML fits in the broader world of AI. Think of it as a low-resolution map of the field, an orientation to the landscape before we begin the hands-on work that comes next.
 
@@ -10,7 +10,7 @@ Before we dive into coding with scikit-learn or building real models, this lesso
 
 The goal here is to help you:
 
-- Explain why machine learning matters and where it's applied.
+- Explain why machine learning matters and where it is applied.
 - Understand how machine learning relates to artificial intelligence.
 - Distinguish between *supervised*, *unsupervised*, and *reinforcement learning*.
 - Identify key differences between *classification*, *regression*, and *clustering* problems.
@@ -19,7 +19,7 @@ The goal here is to help you:
 
 ## Why Machine Learning Matters
 
-Think about the apps you use every day: Netflix suggesting the perfect series for your evening, your phone unlocking when it recognizes your face, Google Maps routing you around traffic, Instagram filling your feed with posts you actually enjoy, or Spotify building a mood-matching playlist. None of that is magic -- it's *machine learning*.
+Think about the apps you use every day: Netflix suggesting the perfect series for your evening, your phone unlocking when it recognizes your face, Google Maps routing you around traffic, Instagram filling your feed with posts you actually enjoy, or Spotify building a mood-matching playlist. None of that is magic -- it is *machine learning*.
 
 Machine Learning (ML) gives software the ability to learn patterns from data instead of only following explicit, hand-written rules. The more data we collect, the better these systems become at recognizing patterns, making predictions, and improving over time.  ML helps your code move from fixed instructions to adaptable, data-driven behavior.
 
@@ -40,9 +40,9 @@ Answer: B
 
 ## Where Machine Learning Fits in the World of AI
 
-Before we define machine learning precisely, let's zoom out and understand where it fits within the broader world of artificial intelligence.
+Before we define machine learning precisely, let us zoom out and understand where it fits within the broader world of artificial intelligence.
 
-You've probably heard the terms *artificial intelligence (AI)*, *machine learning (ML)*, and *deep learning (DL)* used interchangeably -- but they are actually different levels in a hierarchy of concepts: DL is a subset of ML, and ML is a subset of AI.
+You have probably heard the terms *artificial intelligence (AI)*, *machine learning (ML)*, and *deep learning (DL)* used interchangeably -- but they are actually different levels in a hierarchy of concepts: DL is a subset of ML, and ML is a subset of AI.
 
 <p style="text-align:center;">
   <img src="resources/AI_ML_DL.png" alt="AI, Machine Learning, Deep Learning, and ChatGPT relationship diagram" width="350" />
@@ -63,7 +63,7 @@ Watch: [Deep Learning in action](https://www.youtube.com/watch?v=6M5VXKLf4D4)
 
 ### Generative AI
 
-*Generative AI* is a newer branch built on top of deep learning. Instead of just recognizing patterns, it learns to create *new* content -- text, images, audio, or even code -- that resembles what humans might produce. It's what powers tools like DALL-E, Midjourney, and ChatGPT. Generative AI models don't just classify or predict -- they *generate*, using patterns they've learned from massive datasets.
+*Generative AI* is a newer branch built on top of deep learning. Instead of just recognizing patterns, it learns to create *new* content -- text, images, audio, or even code -- that resembles what humans might produce. It is what powers tools like DALL-E, Midjourney, and ChatGPT. Generative AI models do not just classify or predict -- they *generate*, using patterns they have learned from massive datasets.
 
 ### Large Language Models (LLMs)
 
@@ -77,13 +77,13 @@ For a concise visual overview, check out: [AI vs Machine Learning vs Deep Learni
 
 ### What tool to use?
 
-Not every problem requires deep learning. In fact, most real-world problems can be solved with simple models that train faster, require less data, and are easier to debug. Think of machine learning algorithms as tools in a toolkit -- you wouldn't use a sledgehammer to hang a picture frame. Similarly, using deep learning for a problem that can be solved with simpler techniques is often overkill and counterproductive. 
+Not every problem requires deep learning. In fact, most real-world problems can be solved with simple models that train faster, require less data, and are easier to debug. Think of machine learning algorithms as tools in a toolkit -- you would not use a sledgehammer to hang a picture frame. Similarly, using deep learning for a problem that can be solved with simpler techniques is often overkill and counterproductive. 
 
-Many practical problems -- predicting house prices, estimating delivery time, or classifying flowers in a picture -- can be solved effectively using *simpler, classical ML models*. We'll start with those, because understanding and interpreting these simpler models lays a strong foundation for exploring deeper, more complex systems later on.
+Many practical problems -- predicting house prices, estimating delivery time, or classifying flowers in a picture -- can be solved effectively using *simpler, classical ML models*. We will start with those, because understanding and interpreting these simpler models lays a strong foundation for exploring deeper, more complex systems later on.
 
 ## What Exactly Is Machine Learning?
 
-Now that we know where ML fits, let's define it clearly:
+Now that we know where ML fits, let us define it clearly:
 
 > *Machine learning* is the study of computer algorithms that improve automatically through experience (data).
 
@@ -105,7 +105,7 @@ Machine learning can be divided into several major types based on the kind of da
 
 For a quick visual overview before we dive deeper, check out this [short video](https://www.youtube.com/watch?v=ZNrwlu7cvsI).
 
-We'll start with *supervised learning*, which is the most common and widely used type in practical machine learning tasks.
+We will start with *supervised learning*, which is the most common and widely used type in practical machine learning tasks.
 
 ## 1. Supervised Learning
 
@@ -113,7 +113,7 @@ Supervised machine learning is a type of artificial intelligence in which an alg
 
 The goal is to build a model that can accurately generalize and predict the output for new, unseen data.
 
-Think of it like a teacher guiding a student -- the student learns from examples and correct answers until they can generalize on their own. Imagine you're teaching a child to identify fruits. You show them pictures and say: "This is an apple." "This is a banana." Over time, the child learns what features define an apple versus a banana. That's supervised learning -- learning from labeled examples.
+Think of it like a teacher guiding a student -- the student learns from examples and correct answers until they can generalize on their own. Imagine you are teaching a child to identify fruits. You show them pictures and say: "This is an apple." "This is a banana." Over time, the child learns what features define an apple versus a banana. That is supervised learning -- learning from labeled examples.
 
 ### Subtypes of Supervised Learning
 
@@ -123,11 +123,11 @@ Supervised learning problems are typically categorized into two main types based
 
 *Regression* is a type of supervised learning used when the target variable is continuous, meaning it can take on any numerical value. In simple terms, regression helps us predict numbers like estimating a house's price or tomorrow's temperaturey. When you hear "regression," think of it as the model trying to find a relationship between two things, for example, a house's size and its price.
 
-Now, let's look at a simple example. In the scatterplot below, each dot represents a house. The x-axis shows its size (in square feet) and the y-axis shows its sale price.
+Now, let us look at a simple example. In the scatterplot below, each dot represents a house. The x-axis shows its size (in square feet) and the y-axis shows its sale price.
 
 ![Regression](resources/Regression.png)
 
-Notice how a single line passes through the cloud of points. This line helps us estimate the price of a new house we haven't seen yet, based on its size. We draw one line that best fits the trend in the data, and that line becomes our *model*. The model learns a rule that maps inputs to a number. For a simple example with one feature (just size), this rule looks like a straight line, often written as:
+Notice how a single line passes through the cloud of points. This line helps us estimate the price of a new house we have not seen yet, based on its size. We draw one line that best fits the trend in the data, and that line becomes our *model*. The model learns a rule that maps inputs to a number. For a simple example with one feature (just size), this rule looks like a straight line, often written as:
 
 \[
 y = mx + b
@@ -137,7 +137,7 @@ where `m` is the slope (how much price changes with size) and `b` is the interce
 
 In real-world cases, the model might use many features -- such as the number of bedrooms, location, and age -- and combine them to produce a single prediction: the price. The vertical gaps between each dot and the line represent errors, also called *residuals*. The best-fit line is the one that minimizes these errors on average, meaning it captures the overall trend of the data as closely as possible.
 
-Regression is most useful when the target output is a numerical value rather than a category. A simple straight line is an excellent starting point because it's easy to interpret and provides clear intuition. However, if the relationship between variables isn't perfectly straight -- for example, if prices don't increase exactly in proportion to house size -- the pattern is no longer purely linear. A visualization helps reveal whether a straight-line assumption makes sense or if we'll need more flexible models later.
+Regression is most useful when the target output is a numerical value rather than a category. A simple straight line is an excellent starting point because it is easy to interpret and provides clear intuition. However, if the relationship between variables is not perfectly straight -- for example, if prices do not increase exactly in proportion to house size -- the pattern is no longer purely linear. A visualization helps reveal whether a straight-line assumption makes sense or if we will need more flexible models later.
 
 ### 1.2 Classification
 
@@ -145,13 +145,13 @@ Classification is a supervised learning task that categorizes data into discrete
 
 The model learns from examples with known categories, then predicts which class a new observation belongs to.
 
-**Binary classification** is about choosing between exactly two categories. A classic example is deciding whether a photo contains a cat or a dog. The model trains on thousands of labeled images and learns the patterns that distinguish the two -- shapes, textures, features. Given a new photo, it makes one call: cat or dog? That's it. The output is always one of two options.
+**Binary classification** is about choosing between exactly two categories. A classic example is deciding whether a photo contains a cat or a dog. The model trains on thousands of labeled images and learns the patterns that distinguish the two -- shapes, textures, features. Given a new photo, it makes one call: cat or dog? That is it. The output is always one of two options.
 
 **Multi-class classification** is when you have more than two categories. So you might have an image, and the classifier has to decide if it is a cat, dog, or rabbit. 
 
 At the very beginning, the model has no understanding of what any of these animals look like -- the image is nothing more than thousands of pixel values. But as it trains on many examples, it starts to pick up patterns. It notices the shapes of ears, the textures of fur, the general outline of the body, and the color patterns that tend to appear with each type of animal. None of this is taught explicitly; the model discovers these differences by seeing enough labeled images and learning what makes each class visually distinct.
 
-When you give the trained model a new picture, it doesn't "recognize" the animal the way humans do. Instead, it analyzes the visual patterns in the pixels and compares them with the patterns it learned during training. 
+When you give the trained model a new picture, it does not "recognize" the animal the way humans do. Instead, it analyzes the visual patterns in the pixels and compares them with the patterns it learned during training. 
 
 You interact with this kind of system all the time: photo apps that group pictures by subject, plant-identification apps that guess the species from a snapshot, or tools that sort documents into different types. In each case, the idea is the same -- the model receives input values, and its output is its prediction of which class it most likely belongs to.
 
@@ -194,21 +194,21 @@ Sometimes a dataset has so many columns (features) that it becomes difficult to 
 
 Imagine you have an extremely high-resolution photo with millions of pixels (features). You can compress the image and still recognize the main shapes and colors, you can still "see" your friend's face. Even though the final image has fewer pixels, the essential information remains.
 
-That's the idea behind dimensionality reduction: we reduce the number of features while keeping the core patterns. This helps us visualize high-dimensional data, speed up models, and uncover structure hidden across many dimensions.
+That is the idea behind dimensionality reduction: we reduce the number of features while keeping the core patterns. This helps us visualize high-dimensional data, speed up models, and uncover structure hidden across many dimensions.
 
-We will explore one popular technique, PCA (Principal Component Analysis), next week using scikit-learn. It is a very important preprocessing and feature engineering technique. 
+We will look briefly at one popular technique, PCA (Principal Component Analysis), in an optional lesson next week using scikit-learn. It is a useful technique for visualizing high-dimensional data, and you will use it again in Week 5 to visualize language-model embeddings. 
 
 ## 3. Reinforcement Learning
 
 Reinforcement Learning (RL) is one of the most fascinating and dynamic branches of machine learning. Reinforcement learning derives from the study of how animals learn to adaptively interact with the world via trial and error.  Reinforcement learning is about *agents learning through interaction with an environment*. 
 
-In this paradigm, the learning system -- called an *agent* -- isn't simply fed a dataset. Instead, it must explore, experiment, and learn from experience. The agent takes actions within an *environment*, observes what happens, and receives feedback in the form of rewards or penalties. Over time, it learns a *policy*, a strategy that helps it make better decisions to maximize its long-term reward.
+In this paradigm, the learning system -- called an *agent* -- is not simply fed a dataset. Instead, it must explore, experiment, and learn from experience. The agent takes actions within an *environment*, observes what happens, and receives feedback in the form of rewards or penalties. Over time, it learns a *policy*, a strategy that helps it make better decisions to maximize its long-term reward.
 
 We will not be doing hands-on activities with RL in Python 200, but it is important to know about this branch of ML. It is used to train many AI systems such as ChatGPT. 
 
 Think of it as how we humans (or animals) learn through trial and error. For example, learning to ride a bike or play a video game -- at first, we make mistakes, but with each attempt, we improve based on the feedback we receive.
 
-A simple way to visualize this concept is by imagining you're teaching a dog new tricks. Every time the dog performs the right action like sitting on command, you give it a treat. If it doesn't, there's no treat. Over time, the dog learns that sitting leads to a positive outcome.
+A simple way to visualize this concept is by imagining you are teaching a dog new tricks. Every time the dog performs the right action like sitting on command, you give it a treat. If it does not, there is no treat. Over time, the dog learns that sitting leads to a positive outcome.
 
 At its core, the reinforcement learning process is a continuous feedback loop between the agent and its environment.
 
@@ -262,8 +262,8 @@ Answer: B
 
 *Q3.* Which statement about deep learning is true?
 
-A. It doesn't require data
-B. It's a subset of machine learning that uses neural networks
+A. It does not require data
+B. It is a subset of machine learning that uses neural networks
 C. It replaces classical ML completely
 D. It only works for text-based problems
 
@@ -299,8 +299,8 @@ In this lesson, we covered where machine learning fits within the world of artif
 
 You also saw that while AI is the broader goal of making machines "think," machine learning is how they learn from data, and deep learning helps them see and understand complex patterns, pushing the boundaries of what machines can do.
 
-As we move ahead, we'll transition from theory to practice -- stepping into one of the most powerful and beginner-friendly libraries in the ML world: scikit-learn.
+As we move ahead, we will transition from theory to practice -- stepping into one of the most powerful and beginner-friendly libraries in the ML world: scikit-learn.
 
-In the next lesson, we'll explore the scikit-learn ecosystem, understand its structure, and see how it serves as the foundation for implementing everything we've just learned -- from data preprocessing to building real models.
+In the next lesson, we will explore the scikit-learn ecosystem, understand its structure, and see how it serves as the foundation for implementing everything we have just learned -- from data preprocessing to building real models.
 
-> "Now that you understand the landscape of machine learning, it's time to open the toolbox and start creating."
+> "Now that you understand the landscape of machine learning, it is time to open the toolbox and start creating."

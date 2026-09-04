@@ -101,7 +101,7 @@ steps = [
 
 ## Keyword RAG
 
-The following questions use the keyword retrieval function from the lesson. Copy the function below into your `warmup_06.py` — you will call it in the questions that follow.
+The following questions use the keyword retrieval function from the lesson. Copy the function below into your `warmup_06.py` — the questions that follow call it. Use exactly as written (later questions depend on this function):
 
 ```python
 import string
@@ -216,7 +216,7 @@ Keyword RAG and semantic RAG handle the same problem differently. Copy this tabl
 
 For this section you will build a small LlamaIndex pipeline using the Brightleaf Solar PDFs from the lesson. These documents should already be familiar from the lesson material.
 
-**Path note**: The `brightleaf_pdfs/` directory is in the lesson folder, not the assignments folder. Point `SimpleDirectoryReader` to it using a path relative to where you run your script — for example:
+**Path note**: The `brightleaf_pdfs/` directory is in the lesson folder, not the assignments folder. Point `SimpleDirectoryReader` to it using a path relative to where you run your script. Example — adapt to your own layout:
 
 ```python
 SimpleDirectoryReader("../../06_AI_augmentation/brightleaf_pdfs")
@@ -261,7 +261,7 @@ Add a comment explaining what you expected, what actually happened, and what you
 
 Using the same index and query engine you built in Q1, evaluate one response using LlamaIndex's built-in evaluators.
 
-Import and instantiate a `FaithfulnessEvaluator` and a `RelevancyEvaluator`, both using `gpt-4o-mini` as the judge LLM (refer to the "RAG Evaluation using LlamaIndex" section of lesson 4 for the exact import and setup pattern). Run them on this query:
+Import and instantiate a `FaithfulnessEvaluator` and a `RelevancyEvaluator`, both using `gpt-4o-mini` as the judge LLM. (If you need a reminder of the import and setup, the lesson's "RAG Evaluation using LlamaIndex" section shows the same pattern.) Run them on this query:
 
 ```python
 q = "What employee benefits does BrightLeaf offer?"
@@ -283,7 +283,7 @@ Groundwork Coffee Co. is a small, community-focused coffee shop. They have put t
 
 This is the kind of project you might build in a real job. A business has a folder of internal documents and wants an AI assistant that can answer questions without reading every file manually — and without the AI making things up. By the end of this project, you will have built that system from scratch.
 
-The Groundwork documents are in `lessons/06_AI_augmentation/resources/groundwork_docs` (link [here](https://github.com/Code-the-Dream-School/python-200/tree/a31aa606a13ef99fe2b8359dd3e04407e0452b91/lessons/06_AI_augmentation/resources/groundwork_docs)). Read through them before writing any code. Understanding your data before you start coding will save you time — this is the same principle as the pre-preprocessing step from Week 1.
+The Groundwork documents are in `lessons/06_AI_augmentation/resources/groundwork_docs` (link [here](https://github.com/Code-the-Dream-School/python-200/tree/a31aa606a13ef99fe2b8359dd3e04407e0452b91/lessons/06_AI_augmentation/resources/groundwork_docs)). Read through them before writing any code. Understanding your data before you start coding will save you time — the same principle you have applied throughout the course.
 
 Place all your code in `assignments_06/project_06.py`.
 
@@ -291,7 +291,7 @@ Place all your code in `assignments_06/project_06.py`.
 
 Add your imports at the top of the file. Load your API key from `.env` and print a confirmation message. Add an `assert` statement to verify that the `groundwork_docs/` directory exists before your code tries to use it.
 
-An `assert` statement stops the program early with a clear error message if a condition is not met. For example:
+An `assert` statement stops the program early with a clear error message if a condition is not met. Example — adapt to your own layout:
 
 ```python
 from pathlib import Path
@@ -360,7 +360,7 @@ Add a comment block at the end of `project_06.py` answering the following:
 
 # Optional Extensions
 
-## Extension A: Side-by-Side Comparison (Moderate)
+## Extension A (Optional): Side-by-Side Comparison (Moderate)
 
 *No new setup required.*
 
@@ -371,7 +371,7 @@ For each query, print both responses side by side and add a comment comparing th
 - How did the quality of the two answers differ?
 - Were there any queries where keyword RAG did just as well as semantic RAG? Any where it clearly failed?
 
-To load the Groundwork documents as plain text for the keyword system, you can read the `.txt` files directly:
+To load the Groundwork documents as plain text for the keyword system, you can read the `.txt` files directly. Example — adapt to your own layout:
 
 ```python
 from pathlib import Path
@@ -380,7 +380,7 @@ docs_dir = Path("assignments_06/resources/groundwork_docs")
 documents = {f.name: f.read_text() for f in docs_dir.glob("*.txt")}
 ```
 
-## Extension C: Add a New Document (Low)
+## Extension B (Optional): Add a New Document (Low)
 
 *No new setup required.*
 
@@ -393,7 +393,7 @@ Add a comment explaining:
 - What query you used to test it and whether the assistant retrieved the correct content
 - Why this demonstrates an advantage of RAG over fine-tuning
 
-## Extension D: Persistent Vector Store with pgvector (Stretch)
+## Extension C (Optional): Persistent Vector Store with pgvector
 
 *This extension requires Docker to be installed on your computer. If you do not have Docker, skip it — the setup time is significant and is not the focus of this week's learning. If you do have Docker installed, refer to the pgvector setup instructions in the LlamaIndex lesson before starting.*
 
@@ -406,3 +406,53 @@ The code change itself is small (approximately 20 lines), but you will need:
 Follow the "Persistent database semantic RAG using LlamaIndex" section of the lesson for the full setup pattern. Once it is working, add a comment comparing the experience of using the persistent store vs. the in-memory store:
 - What is the main practical advantage of persisting the embeddings?
 - In what situation would you definitely want this in a production system?
+
+---
+
+<details>
+<summary>Rubric (for AirHub reviewer and mentors)</summary>
+
+**General grading notes:**
+
+- **Student-chosen and model-generated values vary — do not fail them for differing.** Every LLM/RAG answer, similarity score, retrieved chunk, and evaluator score depends on the model and the documents, and the student picks their own queries in several tasks (Keyword Q3 prediction, LlamaIndex Q3 "hard" query, Project Step 5 failure query, and all reflection/comment answers). Grade whether the required piece is present and addressed, not whether it matches a reference.
+- **File paths and folder layout are enforced by any automated run, not by your inspection.** The assignment repeatedly tells students to adjust paths to their own setup, and shows example paths for `brightleaf_pdfs/`, `groundwork_docs/`, and `assignments_06/`. Do not fail a submission because a path or directory structure differs from an example you cannot verify.
+- **Exact-vs-example labels:** identifiers marked `Use exactly as written (later tasks depend on these names)` should match; anything marked `Example — adapt to your own values` must not be failed for differing. The five provided query/document sets and the `simple_keyword_retrieval` function are used as written; sample paths and any content the student authors are their own.
+
+### Required Deliverables/Tasks
+
+**Part 1 — Warmup (`warmup_06.py`)**
+
+- **File and structure** — a single file `warmup_06.py` with sections/questions marked in comments and outputs shown via `print()`. `Use exactly as written (later tasks depend on these names)`: file name `warmup_06.py`.
+- **Concepts Q1** — comment block naming the best approach (prompt engineering, fine-tuning, or RAG) for each of Scenarios A, B, and C, with a 1–2 sentence reason each. Expected mapping: A → RAG, B → fine-tuning, C → prompt engineering; accept sound reasoning even if worded differently.
+- **Concepts Q2** — comment explaining why a confidently-wrong answer is more harmful than "I am not sure," with one real example, and addressing how tone affects trust.
+- **Concepts Q3** — the 8-step list copied in as a comment, reordered into a correct RAG pipeline sequence, each step with a one-sentence description.
+- **Keyword function** — `simple_keyword_retrieval` copied into the file. `Use exactly as written (later questions depend on this function)`.
+- **Keyword Q1** — run `simple_keyword_retrieval` with `verbose=True` on the provided query/documents, print the selected document name, and comment on which was selected and why. Provided query and `documents` dict: use as written.
+- **Keyword Q2** — run the same function on the provided second query and same documents; comment on which document was selected, whether keyword RAG got it right and why, and what retrieval would do better.
+- **Keyword Q3** — a prediction and reasoning written as a comment first, then run the provided query and comment on whether the prediction held. Student's prediction is their own — do not fail its content.
+- **Semantic Q1** — comment block answering the three questions (what a vector embedding is; which of 0.85 vs 0.30 is more relevant and what the number means; why semantic search finds matches without exact word overlap), in the student's own words.
+- **Semantic Q2** — the comparison table copied in as a comment with the Semantic RAG column filled in.
+- **LlamaIndex Q1** — build an in-memory LlamaIndex pipeline over the Brightleaf PDFs and run the two provided queries with `similarity_top_k=3`; for each, print the question, the model's answer, and for each of 3 source nodes the similarity score and first 150 characters; plus a per-query comment on relevance, tone/hedging, and anything unexpected. `Use exactly as written`: `similarity_top_k=3`. Path to the PDFs is `Example — adapt to your own values`.
+- **LlamaIndex Q2** — re-run one Q1 query with `similarity_top_k=1` and again with `similarity_top_k=5`, print response and source-node scores for both, and comment on how the response changed and whether more context is always better. `Use exactly as written`: the `similarity_top_k` values 1 and 5.
+- **LlamaIndex Q3** — a student-chosen challenging query, with the response and all retrieved chunks printed, and a comment on expectation vs. outcome and what to improve. Query choice is the student's own.
+- **LlamaIndex Q4** — instantiate a `FaithfulnessEvaluator` and a `RelevancyEvaluator` using `gpt-4o-mini` as the judge LLM; run on the provided query, print both scores, then run on a student-chosen lower-quality query and print those scores; plus a comment block answering the four questions. `Use exactly as written`: `FaithfulnessEvaluator`, `RelevancyEvaluator`, `gpt-4o-mini`.
+
+**Part 2 — Mini-Project (`project_06.py`)**
+
+- **File** — all project code in `project_06.py`. `Use exactly as written (later tasks depend on these names)`: file name `project_06.py`.
+- **Step 1 — Setup** — imports at top; API key loaded from `.env` with a printed confirmation; an `assert` that the documents directory exists. The directory path is `Example — adapt to your own values`.
+- **Step 2 — Load** — load all documents with `SimpleDirectoryReader`; print how many were loaded and each file name.
+- **Step 3 — Index** — build a `VectorStoreIndex` and a query engine with `similarity_top_k=3`; print a readiness confirmation message (wording is an example). `Use exactly as written`: `similarity_top_k=3`.
+- **Step 4 — Query** — run the five provided queries in a loop (not five copied blocks); for each, print the question, the model's answer, and the top source node's document name, similarity score, and first 200 characters; then a reflection comment. The five `questions` are used as written.
+- **Step 5 — Find a Failure** — a student-chosen hard query, with the full response and all three source nodes printed, and a comment covering what was asked and why, what went wrong, whether the model's tone changed, and what to improve. Query choice is the student's own.
+- **Step 6 — Reflection** — a closing comment block answering the three questions (framework line-count value; a non-coffee-shop use case; a failure mode RAG cannot fully prevent).
+
+### Optional Deliverables/Tasks
+
+Do not fail a student for omitting any of these. All three appear under "Optional Extensions" and are marked `(Optional)` in their headings.
+
+- **Extension A (Optional) — Side-by-Side Comparison** — build a keyword RAG system with `simple_keyword_retrieval` over the Groundwork docs, run the five project queries through both keyword and LlamaIndex systems, print responses side by side, and comment comparing them. Document-loading path is `Example — adapt to your own values`.
+- **Extension B (Optional) — Add a New Document** — write a new one-page Groundwork document, add it to the docs folder, rebuild the index, verify the assistant can answer about it, and comment on what was added, the test query/result, and why this shows a RAG advantage over fine-tuning. The document content is the student's own.
+- **Extension C (Optional) — Persistent Vector Store with pgvector** — replace the in-memory store with a `PGVectorStore` backed by a PostgreSQL/pgvector container, and comment comparing persistent vs. in-memory. Requires Docker; do not penalize students who skip it (the assignment says to skip if Docker is unavailable).
+
+</details>

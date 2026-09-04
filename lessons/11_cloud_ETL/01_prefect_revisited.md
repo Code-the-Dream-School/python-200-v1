@@ -1,8 +1,8 @@
 # Prefect, Revisited
 
-You built your first Prefect pipeline in Week 1. This lesson is a short reconnection with the concepts you already know, followed by a look at what changes when you take those same patterns into a cloud ETL context.
+You were introduced to Prefect in Week 10, where you wrapped the double-transform into a simple flow. This lesson is a short reconnection with those concepts, followed by a look at what changes when you take the same patterns into a full cloud ETL context.
 
-If anything in this lesson feels new, it is worth revisiting the [Week 1 pipelines lesson](../01_analysis_intro/07_pipelines.md) before continuing.
+If the `@task` and `@flow` decorators feel new, it is worth revisiting the [Week 10 orchestration lesson](../10_llm_pipelines/04_orchestration.md) before continuing.
 
 For reference:
 - [Prefect 3.x flows documentation](https://docs.prefect.io/v3/concepts/flows)
@@ -12,7 +12,7 @@ For reference:
 
 By the end of this lesson, you will be able to:
 
-- Recall the core Prefect concepts (`@task`, `@flow`, retries, logging) from Week 1
+- Recall the core Prefect concepts (`@task`, `@flow`) from Week 10
 - Explain what changes when Prefect tasks perform cloud I/O instead of local operations
 - Launch the Prefect UI and identify the key elements of a flow run
 
@@ -45,15 +45,13 @@ if __name__ == "__main__":
     etl_pipeline()
 ```
 
-When you call `etl_pipeline()`, Prefect runs each task in sequence, tracks its state (Completed, Failed, etc.), and captures any `print()` output as structured logs (because of `log_prints=True`).
-
-A note on versions: the Week 1 lesson references "Prefect 2.x" and the "Orion" dashboard. This course uses Prefect 3.x. The core API — `@task`, `@flow`, `retries`, `get_run_logger()` — is identical. The dashboard looks slightly different but works the same way.
+When you call `etl_pipeline()`, Prefect runs each task in sequence, tracks its state (Completed, Failed, etc.), and captures any `print()` output as structured logs (because of `log_prints=True`). This is the same `@task` and `@flow` structure you used in Week 10. What is new this week is everything around it: cloud I/O in the tasks, the Prefect UI, retries, structured logging, and running the whole extract-load-transform pipeline as one flow.
 
 ## What Changes in a Cloud ETL Context
 
-In Week 1, your pipeline tasks did local work: they loaded a DataFrame from memory, cleaned it, and logged results. If something went wrong, you re-ran the script. No harm done.
+The Week 10 flow you built ran its tasks once, in order. If a task failed, the flow stopped and you re-ran it by hand. That was the light version, and it was fine for learning the shape of a flow.
 
-In a cloud ETL pipeline, the stakes are different. Each task does real I/O:
+In a full cloud ETL pipeline that runs on a schedule, the stakes are higher, because each task does real I/O:
 
 - The extract task makes an HTTP call to an external API. The call can fail due to rate limits, network blips, or a momentarily unavailable service.
 - The transform task calls an ML model and the OpenAI API for each record. Each LLM call costs money and takes time; a mid-run failure wastes both.
@@ -61,7 +59,7 @@ In a cloud ETL pipeline, the stakes are different. Each task does real I/O:
 
 Failures are not just inconvenient — they waste money, leave incomplete data, and may not be obvious unless you are watching the logs. This is why observability (knowing what ran, what failed, and why) matters much more in a cloud pipeline than in a local script.
 
-Prefect addresses this through three things you already know: retries to handle transient failures automatically, explicit error checks to surface problems cleanly, and structured logging so you can see exactly what happened in each run.
+Prefect addresses this through three mechanisms, which this week introduces: retries to handle transient failures automatically, explicit error checks to surface problems cleanly, and structured logging so you can see exactly what happened in each run.
 
 ## The Prefect UI
 

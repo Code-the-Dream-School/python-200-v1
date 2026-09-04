@@ -31,37 +31,26 @@ The weather classifier sits firmly in the ML column: four numeric features, a bi
 
 But the ML model cannot explain its prediction in plain language. It cannot say "good running conditions — mild temperatures and no rain, though the wind will pick up in the afternoon." That requires language generation, which is exactly what LLMs do well. The two tools fill different roles in the same pipeline.
 
-## The Saved Pipeline as a Pipeline Component
+## The Week 4 Component
 
-In Week 4, you saved the best GridSearchCV result as a `.pkl` file:
+In Week 4 you did more than save a `.pkl` file. You packaged the trained classifier into a small, importable component: the `WeatherClassifier` class in a `weather_model` package. Its `__init__` loads the saved pipeline once, and its `predict()` method takes plain dictionaries of weather features and returns a `Prediction` for each, with a `label` (`"good"` or `"skip"`) and a `probability`.
 
-```python
-joblib.dump(best_pipe, "models/weather_classifier.pkl")
-```
-
-That file contains the entire fitted Pipeline — scaler and logistic regression — frozen at the moment of training. Loading it in Week 10 is what makes the week 4 work reusable:
+That component is what makes the Week 4 work reusable here. Instead of loading the raw `.pkl`, remembering the feature order, and pulling the probability out of the right column, you import the component and call one method:
 
 ```python
-import joblib
+from weather_model import WeatherClassifier
 
-clf = joblib.load("models/weather_classifier.pkl")
+classifier = WeatherClassifier("models/weather_classifier.pkl")
+results = classifier.predict([
+    {"temperature_2m_max": 18, "temperature_2m_min": 10,
+     "precipitation_sum": 0.0, "wind_speed_10m_max": 12}
+])
+print(results[0].label, results[0].probability)
 ```
 
-`clf` is immediately ready to call `.predict()` and `.predict_proba()` on new data. No retraining, no re-fitting, no knowledge of how it was built. This is the entire point of model persistence: the training cost is paid once, and the resulting artifact can be used anywhere the `.pkl` file is available.
+The component handles the details that used to be the caller's problem. It selects the four features in the exact order the model was trained on, so a database row with extra columns (such as `date` or `loaded_at`) is fine, and it extracts the confidence score for you. This is the payoff of the packaging work from Week 4: the pipeline that consumes the model does not need to know how the model was built or how its inputs must be shaped. It depends only on `predict()`.
 
-One constraint worth stating explicitly: the model expects input features in a specific order, with specific column names. The metadata file you saved alongside the model records what those names are:
-
-```python
-import json
-
-with open("models/weather_classifier_metadata.json") as f:
-    metadata = json.load(f)
-
-FEATURES = metadata["features"]
-# ['temperature_2m_max', 'temperature_2m_min', 'precipitation_sum', 'wind_speed_10m_max']
-```
-
-When you build a DataFrame from Supabase rows, slicing by `FEATURES` ensures the columns arrive in the right order. The database column names were chosen to match the API field names for exactly this reason.
+To use the component this week, copy your `weather_model` package from your Week 4 assignment into your project, alongside the `models/` directory that holds the saved `.pkl`.
 
 ## What LLMs Do Well in Pipelines
 
@@ -116,6 +105,6 @@ A one-sentence constraint is easy to verify: if the response has more than one s
 
 ## Lesson Wrap-Up
 
-This week's transform step uses both tools where each excels: the ML classifier for a fast, reproducible binary decision on structured numeric features; the LLM for a human-readable explanation that the classifier cannot produce. The serialized Pipeline from Week 4 is a first-class pipeline component — load it, call `.predict()`, move on. The LLM receives the result and adds the language layer on top.
+This week's transform step uses both tools where each excels: the ML classifier for a fast, reproducible binary decision on structured numeric features; the LLM for a human-readable explanation that the classifier cannot produce. The `WeatherClassifier` component from Week 4 makes the model a first-class pipeline component — import it, call `predict()`, move on. The LLM receives the result and adds the language layer on top.
 
 In the next two lessons, you will implement both transform steps: ML inference on Supabase records, then LLM enrichment and writing to `weather_enriched`.

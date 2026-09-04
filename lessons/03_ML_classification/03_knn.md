@@ -1,296 +1,254 @@
-# k-Nearest Neighbor (KNN) Classifiers
-In this lesson, you will build and evaluate your first hands-on classifier using the *k-Nearest Neighbor (KNN)* algorithm.
+# k-Nearest Neighbors (KNN)
 
-KNN is simple. That simplicity allows us to focus on the *core ideas behind classification* before moving on to more complex models later in the course.
+In this lesson you will build your first classifier, using the *k-Nearest Neighbors* (KNN) algorithm. KNN is one of the simplest classifiers, which makes it a good place to see the core ideas of classification, scaling, and evaluation in action before we move to more involved models.
 
-- [IBM article overview](https://www.ibm.com/think/topics/knn)
+- [IBM overview article](https://www.ibm.com/think/topics/knn)
 - [IBM video (10 minutes)](https://www.youtube.com/watch?v=b6uHw7QW_n4)
 
-
 ## The Intuition Behind KNN
-Imagine you discover a new flower in a garden. You don’t know its species, but you *do* know the species of many nearby flowers.
 
-A natural strategy might be:
+Suppose you want to know whether today is good for a run, and you have records of many past days, each already labeled "good" or "skip." A natural strategy is to find the past days that were most *similar* to today, and see how they were labeled.
 
-> Look at the flowers that are most similar to this one. If most of them belong to the same species, this one probably does too.
+![KNN proximity](resources/knn_proximity_image.png)
+*Image credit: GeeksforGeeks*
 
-![KNN Image](resources/knn_proximity_image.png)
-*Image credit:* GeeksforGeeks
+That is exactly how KNN works. To classify a new day, it finds the `k` closest days in the training data, looks at their labels, and lets them vote. The majority label wins. You choose `k`, which can be as small as 1 or as large as 20 or more. There is no real training phase. KNN simply stores the training data and compares each new point to it.
 
-This is exactly how *k-Nearest Neighbor* works. When KNN classifies a new data point (from the test data), it finds the `k` closest points in the training data, looks at their labels, and lets them vote on the final prediction. k is some number you choose, it can be as little as 1, or as high as 10. There is no complex training phase -- KNN simply stores the data and compares new points to what it has already seen.
+For example, with `k = 5`, if the five most similar past days were labeled good, good, good, skip, good, then KNN predicts "good" by a vote of four to one.
 
-## A Tiny Example 
+## The Weather Dataset
 
-Suppose we choose `k = 5`.
+We will use a dataset of 600 days. Each day has four numeric measurements and a label:
 
-A new flower’s three nearest neighbors include:
+- `temperature_2m_max` -- daily high temperature in degrees Celsius
+- `temperature_2m_min` -- daily low temperature in degrees Celsius
+- `precipitation_sum` -- total precipitation in millimeters
+- `wind_speed_10m_max` -- maximum wind speed in km/h
+- `good_for_running` -- 1 if the day is good for a run, 0 if not
 
-* two flowers from the *Setosa* species,
-* one flower from the *Versicolor* species.
-
-KNN predicts *Setosa*, because that label receives the majority of votes.
-
-This simple voting idea is the foundation of the entire algorithm.
-
-## The Iris Dataset: The "Hello World" of Classification
-
-Before building any model, we need to understand our data. The *Iris dataset* is often called the *hello world of classification* -- small, clean, balanced, and extremely well-studied, making it perfect for learning.
-
-Each row represents a flower, one sample from three species of iris (setosa, versicolor, or virginica). For each flower, we measure:
-
-* sepal length
-* sepal width
-* petal length
-* petal width
-
-![Iris flowers](resources/iris_dataset.png)
-*Image credit:* CodeSignal
-
-All measurements are in centimeters. The label tells us which species the flower belongs to: *Setosa*, *Versicolor*, or *Virginica*. In real-world projects, data exploration always comes *before* modeling, so we begin with a small amount of exploratory data analysis (EDA) to build intuition.
-
-## Setup
+The label was defined the same way as the `RunningConditions` rule from Week 1: a day is good if it is mild (a high between 7 and 26 degrees), not freezing overnight, dry (little precipitation), and not too windy. About half the days are good, so the classes are well balanced.
 
 ```python
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-import seaborn as sns
 
-from sklearn.datasets import load_iris
 from sklearn.model_selection import train_test_split, cross_val_score
+from sklearn.preprocessing import StandardScaler
+from sklearn.pipeline import Pipeline
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.metrics import (
     accuracy_score,
     classification_report,
     confusion_matrix,
-    ConfusionMatrixDisplay
+    ConfusionMatrixDisplay,
 )
-```
 
-## Loading the Dataset
+df = pd.read_csv("resources/weather_classification.csv")
 
-```python
-iris = load_iris(as_frame=True)
-
-X = iris.data
-y = iris.target
+features = ["temperature_2m_max", "temperature_2m_min", "precipitation_sum", "wind_speed_10m_max"]
+X = df[features]
+y = df["good_for_running"]
 
 print(X.shape)
-X.head()
+print(y.value_counts())
 ```
 
-You will find that the dataset contains 150 flowers and 4 numeric features. There are no missing values, and all features are measured in the same units.
-
-## Quick EDA: Building Intuition
-
-First, we check whether the dataset is balanced.
-
-```python
-sns.countplot(x=y.map(dict(enumerate(iris.target_names))))
-plt.title("Number of Flowers per Species")
-plt.show()
-```
-
-![Number per species](resources/number_of_flowers_per_species.png)
-
-Each species appears the same number of times, which makes model evaluation more reliable. Next, we look at how petal measurements separate species:
-
-```python
-sns.scatterplot(
-    x=X["petal length (cm)"],
-    y=X["petal width (cm)"],
-    hue=y.map(dict(enumerate(iris.target_names)))
-)
-plt.title("Petal Length vs Petal Width")
-plt.show()
-```
-
-You will see that petal measurements separate species extremely well, especially *Setosa*. Sepal measurements overlap more, but the pairplot below gives a fuller picture of all feature relationships together.
-
-```python
-sns.pairplot(
-    pd.concat([X, y.rename("species")], axis=1),
-    hue="species"
-)
-plt.show()
-```
-
-From just a few plots, we already learn that some features are much more informative than others and that a simple classifier should work well.
+You will see 600 rows, four features, and roughly 305 good days to 295 skip days.
 
 ## Train / Test Split
 
-Before modeling, we split the data.
+We hold out 20 percent of the data as a test set, and we stratify on the label so that both sets keep the same balance of good and skip days.
 
 ```python
 X_train, X_test, y_train, y_test = train_test_split(
-    X,
-    y,
-    test_size=0.2,
-    random_state=42,
-    stratify=y
+    X, y, test_size=0.2, random_state=42, stratify=y
 )
+print(X_train.shape, X_test.shape)
 ```
 
-The `stratify=y` argument ensures each species appears in similar proportions in both sets, making our evaluation fair.
+## Why Scaling Matters Here
 
-## A Note on Feature Scaling
+KNN decides which days are "closest" by measuring distance across all four features at once. Look at the ranges of our features. Temperature runs from below zero to the mid-thirties, wind speed runs up to the mid-forties, and precipitation is usually a small number of millimeters. Precipitation has the smallest range, so in a raw distance calculation it barely counts, even though a rainy day is exactly the kind of day you want to skip.
 
-As you learned in the preprocessing lesson, KNN relies entirely on distance calculations, which means features with larger numbers can dominate the result even if they are no more informative than features with smaller numbers. The standard advice is to scale before applying any distance-based model.
-
-We are deliberately skipping that step here. All four Iris features are measured in the same units (centimeters) and fall in a similar numerical range, so they are already roughly comparable. When we experimented with scaling on this dataset, it actually produced slightly *worse* results -- scaling reduced the natural separation that raw petal measurements provide between species. This is an unusual situation, and a useful reminder that rules of thumb are not always right, and preprocessing is an art not a science.
-
-## Our First KNN Model
-
-In the previous scikit-learn lesson, you learned the *standard model-building API* used throughout this course:
-
-1. Create the model
-2. Fit the model
-3. Make predictions
-4. Evaluate results
-
-We follow that exact pattern here.
+As you saw in the preprocessing lesson, the fix is to standardize the features so they are on comparable scales. Let us measure the difference directly. First, KNN on the raw, unscaled features:
 
 ```python
-knn = KNeighborsClassifier(n_neighbors=5)
-knn.fit(X_train, y_train)
-
-preds = knn.predict(X_test)
-
-print("Accuracy:", accuracy_score(y_test, preds))
-print(classification_report(y_test, preds))
+knn_unscaled = KNeighborsClassifier(n_neighbors=5)
+knn_unscaled.fit(X_train, y_train)
+print("Unscaled accuracy:", accuracy_score(y_test, knn_unscaled.predict(X_test)))
 ```
 
-You should see strong performance. The `classification_report` shows four metrics for each class: *precision* (of everything the model predicted as class X, how many were actually X), *recall* (of all true examples of class X, how many did the model catch), *F1-score* (a combination of precision and recall), and support (the count of true examples for that class). These metrics matter most when errors are costly or classes are imbalanced -- we covered them in detail in the classifier evaluation lesson, so refer back there as needed.
-
-You may find the numbers suspiciously high -- possibly 1.0 across the board. Part of that is just Iris being clean data. But there is another reason to be skeptical: you made one particular split with `random_state=42`. A different split might tell a different story. With only 30 test samples, one unusual partition can shift the numbers noticeably. The same concern applies to any model -- including the linear regression work you did earlier.
-
-## Cross-Validation: A More Reliable Picture
-
-The solution is to not commit to a single split. Instead, divide the training data into several equal groups called *folds* -- typically 5 -- and rotate which group is held out for evaluation. Train on 4 folds, evaluate on the fifth; repeat 5 times, each time using a different fold; then average the scores. This is *k-fold cross-validation*. (Note: the k here refers to the number of folds, not the k in KNN -- the naming collision is unfortunate but standard.)
-
-Because every training example participates in evaluation at some point, the averaged score is more stable than any single split. The standard deviation across folds also tells you how consistent the result is -- a low std means it is not just a fluke. And the test set is never used.
+Now KNN with scaling, built as a `Pipeline` so the scaler is fit on the training data only:
 
 ```python
-knn = KNeighborsClassifier(n_neighbors=5)
+knn_scaled = Pipeline([
+    ("scaler", StandardScaler()),
+    ("knn", KNeighborsClassifier(n_neighbors=5)),
+])
+knn_scaled.fit(X_train, y_train)
+print("Scaled accuracy:  ", accuracy_score(y_test, knn_scaled.predict(X_test)))
+```
+
+```text
+Unscaled accuracy: 0.925
+Scaled accuracy:   0.958
+```
+
+Scaling raised accuracy from about 0.925 to about 0.958. That improvement comes almost entirely from letting precipitation and the other smaller-range features count fairly in the distance. This is the preprocessing lesson made concrete: for a distance-based model, scaling is not optional bookkeeping. It changes the predictions.
+
+From here on we use the scaled pipeline.
+
+## Reading the Results
+
+The classification report gives the full picture for both classes:
+
+```python
+y_pred = knn_scaled.predict(X_test)
+print(classification_report(y_test, y_pred, target_names=["skip", "good"]))
+```
+
+```text
+              precision    recall  f1-score   support
+
+        skip       1.00      0.92      0.96        59
+        good       0.92      1.00      0.96        61
+
+    accuracy                           0.96       120
+   macro avg       0.96      0.96      0.96       120
+weighted avg       0.96      0.96      0.96       120
+```
+
+The model does well on both classes. Recall for "good" is very high, meaning it catches nearly every good running day. Precision for "good" is a little lower, meaning it occasionally labels a bad day as good. These are the false positives and false negatives from the evaluation lesson, now attached to a real model.
+
+## A More Reliable Estimate: Cross-Validation
+
+Those numbers came from one particular train/test split. A different split might tell a slightly different story, especially with only 120 test days. Rather than trust a single split, we can use *cross-validation*.
+
+Cross-validation divides the training data into several equal groups called *folds*, usually five. It trains on four folds and evaluates on the fifth, then repeats so that each fold is held out once, and averages the scores. Because every training example is used for evaluation at some point, the averaged score is more stable than any single split. The standard deviation across folds tells you how consistent the result is. The test set is never touched during this process.
+
+```python
+knn = Pipeline([
+    ("scaler", StandardScaler()),
+    ("knn", KNeighborsClassifier(n_neighbors=5)),
+])
 cv_scores = cross_val_score(knn, X_train, y_train, cv=5)
-
-print(cv_scores)           # accuracy on each fold
+print(cv_scores)
 print(f"Mean: {cv_scores.mean():.3f}")
 print(f"Std:  {cv_scores.std():.3f}")
 ```
 
-You will likely see a mean closer to 0.97 -- still excellent, but a more honest picture than a single 1.0. This pattern generalizes to any model: with linear regression you would get R² or RMSE for each fold instead of accuracy. The metric changes; the structure stays the same.
-
-A variant worth knowing is *leave-one-out cross-validation* (LOOCV), where `cv` is set equal to the number of training samples -- each fold contains exactly one example. This gives the most thorough evaluation possible and works well on small datasets, but becomes slow as data grows. For most practical purposes, 5 or 10 folds is a good default.
-
-If you want to learn more about cross-validation, check out the following video: https://www.youtube.com/watch?v=IygUTo-mem0
-
-
-## Confusion Matrix: Seeing Errors Clearly
-
-The confusion matrix shows where the model is getting confused. Each row represents the true species and each column the predicted species, so numbers along the diagonal are correct predictions and off-diagonal numbers are mistakes.
-
-```python
-cm = confusion_matrix(y_test, preds)
-disp = ConfusionMatrixDisplay(
-    confusion_matrix=cm,
-    display_labels=iris.target_names
-)
-
-disp.plot()
-plt.title("KNN Confusion Matrix (Iris)")
-plt.show()
-```
-
-Even when accuracy is high, it is worth generating the confusion matrix. On a dataset this clean you may see a perfect or near-perfect diagonal -- but in real problems, the off-diagonal cells are where the interesting analysis lives.
+You will see five fold scores clustered around 0.93, with a low standard deviation. Building the model as a pipeline matters here: cross-validation refits the scaler on each fold's training portion, so there is no leakage across folds.
 
 ## Choosing k
 
-The only tunable parameter in KNN is `k`, and it matters more than you might expect.
+The one setting you control in KNN is `k`, the number of neighbors that vote. It matters more than you might expect.
 
-With a very small `k` (say, `k=1`), the model makes decisions based on a single neighbor. This makes predictions highly sensitive to noise and outliers: one unusual or mislabeled point can flip the result. This is *overfitting* -- the model memorizes the training data rather than learning a general pattern.
+- A very small `k`, such as `k = 1`, decides based on a single nearest neighbor. One unusual or mislabeled day can flip the prediction. The model is sensitive to noise, which is a form of overfitting.
+- A very large `k` averages over so many neighbors that local detail is lost, and the model drifts toward always predicting the more common class. This is underfitting.
 
-With a very large `k`, the model averages over so many neighbors that local structure gets washed out, and it may simply predict the most common class for every input. This is *underfitting*.
-
-Now that we have cross-validation, we can sweep a range of k values and find the best one without touching the test set. Note that for KNN specifically, evaluating on the entire *training* data set all at once would be completely useless: with `k=1`, every training point's nearest neighbor is itself (distance zero), so the model trivially recalls every label and always scores 1.0. Cross-validation avoids this by always evaluating on held-out data.
+We use cross-validation to compare values of `k` without touching the test set:
 
 ```python
-k_values = list(range(1, 20, 2))  # odd values to avoid tied votes
-
-for k in k_values:
-    knn = KNeighborsClassifier(n_neighbors=k)
+for k in [1, 3, 5, 7, 9, 11, 15, 19, 25]:
+    knn = Pipeline([
+        ("scaler", StandardScaler()),
+        ("knn", KNeighborsClassifier(n_neighbors=k)),
+    ])
     scores = cross_val_score(knn, X_train, y_train, cv=5)
     print(f"k={k:2d}:  mean={scores.mean():.3f}  std={scores.std():.3f}")
 ```
 
-Once you have identified the best k from the output, retrain on the full training set and evaluate on the test set exactly once:
-
-```python
-best_k = 5  # replace with whichever k gave the highest mean CV score above
-
-knn_final = KNeighborsClassifier(n_neighbors=best_k)
-knn_final.fit(X_train, y_train)
-
-final_preds = knn_final.predict(X_test)
-print(f"Final test accuracy: {accuracy_score(y_test, final_preds):.3f}")
+```text
+k= 1:  mean=0.925  std=0.018
+k= 3:  mean=0.921  std=0.028
+k= 5:  mean=0.929  std=0.027
+k= 7:  mean=0.940  std=0.026
+k= 9:  mean=0.935  std=0.018
+k=11:  mean=0.942  std=0.021
+k=15:  mean=0.938  std=0.017
+k=19:  mean=0.929  std=0.017
+k=25:  mean=0.923  std=0.028
 ```
 
-On Iris, the CV scores will be nearly flat across all k values -- again, a sign of how clean the data is. On real-world data, this sweep typically reveals a clear peak (or small range of peaks) before accuracy falls off as k grows too large. The test set score at the end is the one number you report: uncontaminated and used exactly once.
+The best cross-validation score is around `k = 11`. The very small values do slightly worse, and the largest values start to fall off as the model underfits. Once you have chosen `k`, you fit on the full training set and evaluate on the test set exactly once:
+
+```python
+best_k = 11
+final_model = Pipeline([
+    ("scaler", StandardScaler()),
+    ("knn", KNeighborsClassifier(n_neighbors=best_k)),
+])
+final_model.fit(X_train, y_train)
+print("Final test accuracy:", accuracy_score(y_test, final_model.predict(X_test)))
+```
+
+The test-set score at the end is the number you report. It is uncontaminated because you used the test set only once, after all the choices were made.
+
+## The Confusion Matrix
+
+The confusion matrix shows exactly where the model is making mistakes:
+
+```python
+cm = confusion_matrix(y_test, final_model.predict(X_test))
+disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=["skip", "good"])
+disp.plot(colorbar=False)
+plt.title("KNN Confusion Matrix")
+plt.show()
+```
+
+The diagonal cells are correct predictions. The off-diagonal cells tell you the pattern of errors: how many bad days were labeled good (false positives) and how many good days were labeled skip (false negatives). On this dataset the numbers are small, but reading the matrix is a habit worth keeping, because on messier problems the off-diagonal cells are where the interesting analysis lives.
+
+## Key Takeaways
+
+KNN classifies a new point by finding the `k` most similar training points and letting them vote. Because it works by distance, it is sensitive to feature scale, so scaling made a real difference here (accuracy rose from about 0.925 to about 0.958). Cross-validation gives a more reliable estimate than a single split and lets you choose `k` without touching the test set. KNN is transparent and effective, but it has trade-offs: it stores the entire training set and searches through it for every prediction, which makes it slower and heavier at prediction time than the model you will meet next.
 
 ## Check for Understanding
 
-1. When KNN classifies a new data point, what does it do?
+1. How does KNN classify a new data point?
 
-- A. It fits a line through the training data and predicts where the new point falls
-- B. It finds the k closest training examples and takes a majority vote on their labels
-- C. It builds a tree of decision rules from the training data
-- D. It computes the average label of all training examples
-<details> <summary><strong>Click to reveal answer</strong></summary>
-Correct answer: B
-</details>
+    a. It fits a line through the training data
+    b. It finds the k most similar training points and takes a majority vote of their labels
+    c. It builds a tree of decision rules
+    d. It averages the labels of all training points
 
-2. What is the main risk of choosing a very small value of k (such as k=1)?
+    <details>
+    <summary>Show Answer</summary>
+    b -- KNN finds the k nearest neighbors in the training data and lets their labels vote on the prediction.
+    </details>
 
-- A. The model becomes too slow to run
-- B. The model ignores all training data
-- C. The model becomes sensitive to noise and individual outliers, leading to overfitting
-- D. The model always predicts the most common class
-<details> <summary><strong>Click to reveal answer</strong></summary>
-Correct answer: C
-</details>
+2. Why did scaling improve KNN's accuracy on the weather data?
 
-3. Why is cross-validation a more reliable evaluation strategy than a single train/test split?
+    a. Scaling adds more training data
+    b. KNN measures distance, and without scaling the small-range features like precipitation barely counted; scaling lets every feature count fairly
+    c. Scaling changes the labels
+    d. KNN requires scaling to run at all
 
-- A. It uses more data for the final test evaluation
-- B. It evaluates the model on multiple different held-out subsets and averages the results
-- C. It prevents the model from overfitting to the training data
-- D. It removes the need to tune k
-<details> <summary><strong>Click to reveal answer</strong></summary>
-Correct answer: B
-</details>
+    <details>
+    <summary>Show Answer</summary>
+    b -- distance is dominated by large-range features unless the features are standardized. Scaling let precipitation and the other features contribute fairly, which changed the predictions.
+    </details>
 
-4. Why does KNN require careful attention to feature scaling?
+3. Why is cross-validation more reliable than a single train/test split for choosing k?
 
-- A. Scaling is required by the scikit-learn implementation of KNN
-- B. KNN uses a sigmoid function that requires normalized inputs
-- C. Features with larger numerical ranges can dominate distance calculations, regardless of how informative they are
-- D. Scaling speeds up the nearest-neighbor search
-<details> <summary><strong>Click to reveal answer</strong></summary>
-Correct answer: C
-</details>
+    a. It uses the test set more times
+    b. It evaluates on several different held-out folds and averages the results, so the estimate does not depend on one lucky or unlucky split
+    c. It removes the need to scale
+    d. It guarantees higher accuracy
 
-5. In a confusion matrix, what do the numbers along the diagonal represent?
+    <details>
+    <summary>Show Answer</summary>
+    b -- averaging over folds gives a more stable estimate, and the standard deviation shows how consistent the result is. The test set stays untouched.
+    </details>
 
-- A. The features the model found most important
-- B. The cases where the model was uncertain between two classes
-- C. Correct predictions -- cases where the predicted label matches the true label
-- D. The number of training examples per class
-<details> <summary><strong>Click to reveal answer</strong></summary>
-Correct answer: C
-</details>
+4. What is the risk of choosing k = 1?
 
-## What We've Learned
+    a. The model runs too slowly
+    b. A single unusual or mislabeled neighbor can flip the prediction, so the model is sensitive to noise (overfitting)
+    c. The model always predicts the majority class
+    d. The model cannot be evaluated
 
-KNN is a useful first classifier because its logic is so transparent: find similar examples, let them vote. There is no equation to fit, no model to discover. But that simplicity comes with trade-offs. KNN stores the entire training set and must search through all of it for every new prediction, which becomes slow on large datasets. It also treats all features as equally important, so irrelevant or unscaled features can distort distance calculations.
-
-In this lesson you built and evaluated your first classifier, explored a real dataset through EDA, learned why cross-validation gives more reliable estimates than a single split, and used it to choose k without contaminating the test set. Congratulations!
+    <details>
+    <summary>Show Answer</summary>
+    b -- with k = 1 the prediction depends entirely on the single closest point, which makes the model fragile to noise and outliers. Larger k values smooth this out, up to a point.
+    </details>

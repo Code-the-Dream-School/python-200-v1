@@ -1,19 +1,18 @@
 # ML Inference on Database Records
 
-The weather classifier you built in Week 4 has been waiting. You trained it, tuned it, saved it to `models/weather_classifier.pkl`, and wrote a prediction script that loaded it against hand-crafted test cases. This lesson connects that classifier to real data: you will read rows from `weather_raw`, run them through the saved Pipeline, and produce confidence scores and binary predictions for each day.
+The weather classifier you built in Week 4 has been waiting. You trained it in Week 3, then packaged it into the `WeatherClassifier` component and wrote a prediction script that ran it against hand-crafted test cases. This lesson connects that component to real data: you will read rows from `weather_raw`, run them through the component, and produce confidence scores and binary predictions for each day.
 
 ## Learning Objectives
 
 By the end of this lesson, you will be able to:
 
-- Load a saved sklearn Pipeline from disk and apply it to rows fetched from Supabase
-- Build a DataFrame from database records in the correct feature order for the saved model
-- Extract both predicted labels and confidence scores from `predict` and `predict_proba`
+- Use the `WeatherClassifier` component from Week 4 to classify rows fetched from Supabase
+- Read predicted labels and confidence scores from the component's `Prediction` results
 - Implement incremental processing — only classifying records not yet in `weather_enriched`
 
 ## Setup
 
-You will need the `models/` directory from your Week 4 assignment — specifically `weather_classifier.pkl` and `weather_classifier_metadata.json`. If you do not have these files locally, re-run your `train_weather_classifier.py` from Week 4 to regenerate them before proceeding.
+You will need two things from your Week 4 assignment: the `weather_model` package (the `WeatherClassifier` component) and the `models/` directory holding `weather_classifier.pkl`. Copy both into your Week 10 project. If you do not have the saved model file, re-run the training script from your Week 3 assignment to regenerate it.
 
 Install any missing packages:
 
@@ -57,42 +56,23 @@ On the first run, `already_done` is empty and all 365 records will be classified
 
 This is the difference between a one-time backfill and a repeated incremental run. It's why, in the cloud, a scheduled job can process only new data cheaply.
 
-## Building the Feature DataFrame
-
-The saved Pipeline expects input as a DataFrame with columns in a specific order — the same order the model was trained on. Load that order from the metadata file:
-
-```python
-import json
-
-with open("models/weather_classifier_metadata.json") as f:
-    metadata = json.load(f)
-
-FEATURES = metadata["features"]
-# ['temperature_2m_max', 'temperature_2m_min', 'precipitation_sum', 'wind_speed_10m_max']
-
-df = pd.DataFrame(to_classify)
-X = df[FEATURES]  # select only the feature columns, in the right order
-```
-
-Using `df[FEATURES]` rather than `df.drop(["date", "loaded_at"], axis=1)` is intentional: it is explicit about which columns the model expects and is robust to any extra columns that might be added to the table later. The model does not know or care about `date` or `loaded_at`.
-
 ## Running the Classifier
 
-Load the Pipeline and run both `predict` and `predict_proba`:
+Import the `WeatherClassifier` component and predict on the records. Its `predict()` method takes a list of dictionaries — exactly the shape `to_classify` already has — and returns one `Prediction` per record, in the same order.
 
 ```python
-import joblib
+from weather_model import WeatherClassifier
 
-clf = joblib.load("models/weather_classifier.pkl")
+classifier = WeatherClassifier("models/weather_classifier.pkl")
+predictions = classifier.predict(to_classify)
 
-predictions  = clf.predict(X)          # array of 0s and 1s
-probabilities = clf.predict_proba(X)[:, 1]  # probability of class 1 (good for running)
-
-print(f"Good days predicted: {predictions.sum()} / {len(predictions)}")
-print(f"Confidence range: {probabilities.min():.2f} – {probabilities.max():.2f}")
+good = sum(1 for p in predictions if p.label == "good")
+confidences = [p.probability for p in predictions]
+print(f"Good days predicted: {good} / {len(predictions)}")
+print(f"Confidence range: {min(confidences):.2f} – {max(confidences):.2f}")
 ```
 
-`predict_proba` returns a 2D array where column 0 is the probability of class 0 ("skip") and column 1 is the probability of class 1 ("good for running"). The `[:, 1]` slice extracts the confidence score you want — the model's certainty that a given day is good.
+Each `Prediction` has a `label` (`"good"` or `"skip"`) and a `probability` (the model's confidence that the day is good for running). The component selected the four feature columns in the order the model was trained on and pulled the confidence out of the model for you, so the extra `date` and `loaded_at` keys on each row are simply ignored. This is why you built the component in Week 4: the pipeline code never has to think about column order or probability columns.
 
 ## Building Enrichment Records
 
@@ -100,11 +80,11 @@ Combine the predictions back with the date for each row:
 
 ```python
 enrichment_records = []
-for i, row in enumerate(to_classify):
+for row, prediction in zip(to_classify, predictions):
     enrichment_records.append({
         "date":             row["date"],
-        "good_for_running": bool(predictions[i]),
-        "confidence":       round(float(probabilities[i]), 4),
+        "good_for_running": prediction.label == "good",
+        "confidence":       round(prediction.probability, 4),
         # llm_summary will be added in the next lesson
     })
 
@@ -113,10 +93,7 @@ for r in enrichment_records[:3]:
     print(r)
 ```
 
-Two conversions worth noting:
-
-- `bool(predictions[i])` converts a numpy integer (0 or 1) to a Python `bool` (`False` or `True`). Supabase expects a native Python type for boolean columns.
-- `float(probabilities[i])` converts a numpy float64 to a plain Python float. Same reason.
+`prediction.label == "good"` produces a Python `bool` for the boolean column, and `round(prediction.probability, 4)` produces a plain Python float. Both are native Python types that Supabase accepts directly, because the component already converted the model's numpy outputs for you.
 
 At this point you have a list of dictionaries with `date`, `good_for_running`, and `confidence` for each unprocessed day. The `llm_summary` field is missing — you will add it in the next lesson, once the LLM step generates a recommendation for each record.
 
@@ -147,26 +124,26 @@ The fraction of good days should be consistent with what you saw during training
 
 ## Check for Understanding
 
-1. You call `clf.predict_proba(X)` and get a 2D array with shape `(365, 2)`. What does `[:, 1]` do, and why do you want column 1 rather than column 0?
+1. `classifier.predict(to_classify)` returns a list of `Prediction` objects. How do you get the model's confidence that a given day is good for running?
 
-    - A. It selects the first row; column 0 would select the second row
-    - B. It selects all values in the second column, which is the probability of the positive class (good for running)
-    - C. It converts the 2D array to a 1D array of predicted labels
-    - D. It filters to only the rows where the model predicted class 1
+    - A. Call `predict_proba` separately on the result
+    - B. Read the `probability` attribute of each `Prediction`
+    - C. The confidence is the same value as the `label`
+    - D. Divide the number of good days by the total
 
     <details><summary><strong>Click to reveal answer</strong></summary>
-    Correct answer: B. <code>[:, 1]</code> selects all rows from column index 1 — the probability that the model assigned to class 1 (the "good for running" class). Column 0 would give the probability of class 0 ("skip"). Since both columns sum to 1.0 for each row, you only need one.
+    Correct answer: B. Each <code>Prediction</code> carries a <code>label</code> (<code>"good"</code> or <code>"skip"</code>) and a <code>probability</code>. The <code>probability</code> is the model's confidence for the "good" class, which the component extracted from <code>predict_proba</code> for you.
     </details>
 
-2. Why do you use `df[FEATURES]` rather than `df.drop(["date", "loaded_at"], axis=1)` to prepare the feature matrix?
+2. Each row from `weather_raw` includes `date` and `loaded_at` in addition to the four weather features. Why can you pass those rows straight to `classifier.predict()` without removing the extra keys?
 
-    - A. `drop` does not work on DataFrames from Supabase
-    - B. `df[FEATURES]` guarantees the columns arrive in the order the model was trained on, regardless of column order in the database or DataFrame
-    - C. The metadata file contains encrypted column names that only `df[FEATURES]` can parse
-    - D. `drop` removes too many columns and would cause a shape mismatch
+    - A. The component raises an error if extra keys are present
+    - B. The component selects only the four feature columns it needs, in the trained order, and ignores the rest
+    - C. Supabase strips the extra keys automatically before you receive the rows
+    - D. `date` and `loaded_at` are used as extra features
 
     <details><summary><strong>Click to reveal answer</strong></summary>
-    Correct answer: B. The model was trained with columns in a specific order. <code>df[FEATURES]</code> selects exactly those columns in exactly that order. <code>drop</code> would only work correctly if the remaining columns happened to be in the right order — a fragile assumption that breaks if the table gains new columns or if a database query returns columns in a different sequence.
+    Correct answer: B. <code>WeatherClassifier.predict()</code> selects the four required features in the correct order internally, so extra columns like <code>date</code> and <code>loaded_at</code> are ignored. A <em>missing</em> feature, on the other hand, raises a clear error. This is the encapsulation you built in Week 4.
     </details>
 
 3. On a second run of the pipeline, `already_done` has 200 entries. `weather_raw` has 365 rows. How many records will `to_classify` contain, and what will happen to the other 200?
@@ -182,6 +159,6 @@ The fraction of good days should be consistent with what you saw during training
 
 ## Lesson Wrap-Up
 
-Reading rows from `weather_raw`, loading the saved Pipeline, slicing the feature DataFrame in the correct column order, and running `predict` plus `predict_proba` — that is the ML inference step. The incremental processing check ensures the pipeline only does new work on each run. The result is a list of enrichment records with `date`, `good_for_running`, and `confidence`, ready for the LLM step.
+Reading rows from `weather_raw`, then passing them to the `WeatherClassifier` component and reading back a label and confidence for each — that is the ML inference step. The incremental processing check ensures the pipeline only does new work on each run. The result is a list of enrichment records with `date`, `good_for_running`, and `confidence`, ready for the LLM step.
 
 In the next lesson, you will add `llm_summary` to each record and write the complete enrichment records to `weather_enriched`.

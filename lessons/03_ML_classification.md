@@ -1,17 +1,32 @@
-# Week 3: Machine Learning: Classification
-Welcome to Week 3 of Python 200! Last week we built intuition for machine learning using regression -- predicting a continuous value from data. This week we turn to *classification*: predicting which category something belongs to. Is this email spam? Is this tumor malignant? Will this customer churn? Classification is one of the most common tasks in applied ML, and this week you will build real classifiers and learn how to evaluate whether they are actually working.
+# Week 3: Classification and Model Deployment
 
-Along the way, we will also dig into two topics that matter for nearly every ML project: data preprocessing and feature engineering (transforming raw data into something a model can actually learn from), and classifier evaluation (from accuracy to metrics that give you a more robust picture of model performance).
+Welcome to Week 3 of Python 200! Last week you built regression models that predict a continuous number. This week you turn to *classification*, which predicts which category something belongs to. Is this email spam? Is this transaction fraud? Is today a good day for a run? Classification is one of the most common tasks in applied machine learning.
+
+We continue with the same daily weather data you used last week. Last week you predicted the daily high temperature. This week you will build a classifier that predicts whether a day is **good for running**, based on the temperature, precipitation, and wind. You will build two kinds of classifier, learn how to measure whether a classifier is actually working, and then take the most important step for everything that follows: **save a trained model to disk so it can be loaded and used later.** That last skill is the bridge to the rest of the course. In Week 4 you will wrap the saved model in a reusable component, and in Week 10 a cloud pipeline will load it and make predictions on a schedule.
+
+By the end of this week you will be able to:
+
+- Prepare data for a classifier by scaling numeric features and encoding categorical ones, all inside a scikit-learn `Pipeline`
+- Build k-Nearest Neighbors and Logistic Regression classifiers
+- Evaluate a classifier with accuracy, precision, recall, F1, and the confusion matrix
+- Save a trained model to disk with `joblib`, then load it in a separate script and predict
 
 ## Topics
-1. [Data preprocessing and feature engineering](https://github.com/Code-the-Dream-School/python-200/blob/main/lessons/03_ML_classification/01_preprocessing.md)  
-A brief overview of data preprocessing and feature engineering for machine learning, including principal component analysis (PCA). A lot of this will be review from Python 100, and we will be giving a hands-on demo of PCA. 
 
-2. [Evaluating classifier performance](https://github.com/Code-the-Dream-School/python-200/blob/main/lessons/03_ML_classification/02_classifier_evaluation.md)
-How do we evaluate classifier performance? How do you tell if a pipeline is performing well, or if one is better than another? There are multiple metrics. We introduce this using a practical example.
+1. [Preprocessing in a Pipeline](03_ML_classification/01_preprocessing.md)
+Getting data ready for a classifier: scaling numeric features, one-hot encoding categorical features, and a little feature engineering. Then we bundle these steps into a scikit-learn `Pipeline` so that preprocessing and prediction travel together and no information leaks from the test set.
 
-3. [k-Nearest Neighbor Classifiers](https://github.com/Code-the-Dream-School/python-200/blob/main/lessons/03_ML_classification/03_knn.md)  
-Hands on work with k-nearest neighbor classifiers, the hello world of classification.  
+2. [Evaluating Classifiers](03_ML_classification/02_classifier_evaluation.md)
+How do you tell whether a classifier is any good? We introduce the confusion matrix and the four core metrics -- accuracy, precision, recall, and F1 -- using a familiar real-world classifier, and connect them to the cost of different mistakes.
 
-4. [Logistic Regression](https://github.com/Code-the-Dream-School/python-200/blob/main/lessons/03_ML_classification/04_logistic_regression.md)
-For our final practical classification example, we will use logistic regression, which creates highly interpretable classifiers that are roughly equivalent to neurons (this is low-key good preparation for deep learning next week).
+3. [k-Nearest Neighbors](03_ML_classification/03_knn.md)
+Your first classifier. KNN classifies a new day by looking at the most similar days it has already seen. It is simple, which makes it a good place to see scaling, cross-validation, and the confusion matrix in action.
+
+4. [Logistic Regression](03_ML_classification/04_logistic_regression.md)
+A second classifier that draws one clean boundary between the classes and, unlike KNN, produces a probability for each prediction. Its coefficients are interpretable, which tells you *why* the model made a decision.
+
+5. [Model Deployment with joblib](03_ML_classification/05_model_deployment.md)
+The bridge to the rest of the course. Save a trained pipeline to disk, load it in a separate script, and use it to predict on new days. This is the exact step a cloud pipeline depends on.
+
+6. [(Optional) Dimensionality Reduction with PCA](03_ML_classification/06_pca.md)
+An optional lesson on Principal Component Analysis, a technique for compressing many correlated features into a few. You will use it again in Week 5 to visualize language-model embeddings.

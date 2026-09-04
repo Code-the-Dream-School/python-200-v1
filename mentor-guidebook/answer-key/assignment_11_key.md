@@ -1,6 +1,6 @@
 # Assignment 11 Answer Key: Cloud ETL Capstone
 
-**Mentor note:** This is the **capstone** — a full Prefect ETL flow: Extract (Open-Meteo) → Load raw (Supabase) → Transform (Week 4 ML model + LLM) → Load enriched, orchestrated and observable in the Prefect UI. Warmups mix Prefect/production concept answers with small code stubs; the project pulls together everything from Weeks 4, 9, and 10. Grade the flow structure, task decorators, incremental/idempotent design, and error handling. The **video is not assessed**. The decorator/stub questions have exact expected answers (below); the pipeline itself is approach-graded.
+**Mentor note:** This is the **capstone** — a full Prefect ETL flow: Extract (Open-Meteo) → Load raw (Supabase) → Transform (Week 4 `WeatherClassifier` component + LLM) → Load enriched, orchestrated and observable in the Prefect UI. Warmups mix Prefect/production concept answers with small code stubs; the project pulls together everything from Weeks 4, 9, and 10. Grade the flow structure, task decorators, incremental/idempotent design, and error handling. The **video is not assessed**. The decorator/stub questions have exact expected answers (below); the pipeline itself is approach-graded.
 
 ---
 
@@ -12,12 +12,13 @@ Assignment lives in `assignments_11/`:
 assignments_11/
 ├── warmup_11.py            # concept answers (comments) + code stubs
 ├── etl_pipeline.py         # full Prefect flow (video link in top comment)
-├── models/                 # weather_classifier.pkl + metadata.json from Week 4
+├── weather_model/          # copied WeatherClassifier component package from Week 4
+├── models/                 # weather_classifier.pkl from Week 4
 └── outputs/
     └── pipeline_run.md      # written reflection on the run
 ```
 
-Requires `prefect requests openai python-dotenv supabase joblib scikit-learn pandas`. Week 9 must have populated `weather_raw`; Week 4 model files must be in `models/`.
+Requires `prefect requests openai python-dotenv supabase joblib scikit-learn pandas`. Week 9 must have populated `weather_raw`; the Week 4 `weather_model/` package must be copied in, and the Week 4 model files must be in `models/`.
 
 ---
 
@@ -69,7 +70,7 @@ The incremental check (skip dates already in `weather_enriched`) makes the trans
 `@task(retries=2, retry_delay_seconds=5)`; upserts raw records into `weather_raw` with `on_conflict="date"`; prints upserted count.
 
 ### transform task — **Objective (approach)**
-`@task`; incremental check (fetch existing `weather_enriched` dates, skip them); loads `weather_classifier.pkl`; loads feature names from metadata; runs `predict` + `predict_proba`; calls OpenAI for a one-sentence rec per record; **graceful LLM fallback string** on error; progress print every 50; returns the enrichment records. This is the most complex task — verify the incremental skip and the error handling both exist.
+`@task`; incremental check (fetch existing `weather_enriched` dates, skip them); uses the `WeatherClassifier` component (loaded from `models/weather_classifier.pkl`) to classify the unprocessed records, reading each `Prediction`'s `label` and `probability`; calls OpenAI for a one-sentence rec per record; **graceful LLM fallback string** on error; progress print every 50; returns the enrichment records. This is the most complex task — verify the incremental skip and the error handling both exist.
 
 ### load_enriched task — **Objective (approach)**
 `@task(retries=2, retry_delay_seconds=5)`; **guards against an empty list** (prints + returns early); upserts into `weather_enriched` with `on_conflict="date"`; prints upserted count. The empty-list guard is a common miss — without it a no-op run can error.
@@ -88,4 +89,4 @@ Linked in top comment; shows the pipeline running, the Prefect UI with all tasks
 
 ---
 
-**Course complete.** This capstone ties together the Prefect pipelines (Week 1), the weather classifier (Week 4), the LLM enrichment (Weeks 5–6), and the Supabase cloud database (Weeks 8–10) into one production-style ETL flow.
+**Course complete.** This capstone ties together the Prefect pipelines (Week 10), the weather classifier (Week 4), the LLM enrichment (Weeks 5–6), and the Supabase cloud database (Weeks 8–10) into one production-style ETL flow.
