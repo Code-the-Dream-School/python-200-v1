@@ -16,7 +16,7 @@ assignments_07/
 └── .env             # OPENAI_API_KEY — not committed
 ```
 
-Requires `pip install smolagents`. The project reuses the World Happiness data (ideally the merged CSV from Week 1; otherwise it re-merges the yearly files).
+Requires `pip install smolagents`. The project loads the World Happiness data from the yearly CSV files (2015–2024) in `assignments/resources/happiness_project/`, which the student copies into `assignments_07/happiness_project/`. The `load_happiness_data` tool merges those yearly files into a single DataFrame.
 
 ---
 
@@ -102,11 +102,11 @@ Both a `ToolCallingAgent` and a `CodeAgent` run the scatter-plot prompt. Expecte
 **Overall check:** four working `@tool` functions with proper docstrings, a `CodeAgent` wired to them, and the guided queries running with `reset=False` so context persists. The plot must actually be saved to disk. Grade tool correctness + docstrings + reflection; the agent's per-run reasoning varies.
 
 ### Pre-task: Load the Data — **Objective (approach)**
-Points at the Week 1 merged CSV via `DATA_PATH`, or falls back to merging the yearly files inside `load_happiness_data`.
+The yearly CSV files are copied from `assignments/resources/happiness_project/` into the student's `assignments_07/happiness_project/` directory. The `load_happiness_data` tool loads and merges those yearly files into the global `df`.
 
 ### Task 1: Define Tools — **Objective (contract)**
 All four use the `@tool` decorator with complete Google-style docstrings (smolagents reads these to decide when to use each tool — thin docstrings are a real deduction here, not a style nit).
-- **`load_happiness_data`** → loads merged CSV (or merges yearly files), stores in global `df`, returns `{"shape", "columns"}`.
+- **`load_happiness_data`** → loads and merges the yearly CSV files from `happiness_project/`, stores the result in global `df`, returns `{"shape", "columns"}`.
 - **`summarize_column`** → returns `df[column].describe().to_dict()`; `{"error": ...}` if no data / bad column.
 - **`compute_correlation`** → `scipy.stats.pearsonr`; returns `{"col1", "col2", "pearson_r", "p_value"}` rounded to 4 decimals; `{"error": ...}` on bad input.
 - **`get_top_n_countries`** → filters to `year`, sorts by `column` descending, returns top `n` as a list of dicts (country + column value); `{"error": ...}` on bad input.
@@ -119,7 +119,7 @@ All four use the `@tool` decorator with complete Google-style docstrings (smolag
 Five queries run in sequence with `reset=False`. Expected behavior:
 - Q1 → calls `load_happiness_data` (reports shape + columns).
 - Q2 → calls `summarize_column("happiness_score")`.
-- Q3 → calls `compute_correlation("gdp_per_capita", "happiness_score")` — should report a **strong positive** correlation with a very small p-value, and state it's significant.
+- Q3 → calls `compute_correlation("gdp_per_capita", "happiness_score")` — should report a **strong positive** correlation with a very small p-value, describing the strength and direction of the relationship and how confident we can be in it.
 - Q4 → calls `get_top_n_countries("happiness_score", 2020, 5)` — typically Nordic countries (Finland, Denmark, etc.).
 - Q5 → **no tool covers this**, so the agent should **write matplotlib code** and save `outputs/happiness_by_region.png`. Verify the file exists on disk after running.
 
@@ -128,7 +128,7 @@ Two student queries, ideally ≥1 requiring generated code. Comments note whethe
 
 ### Task 5: Reflection — **Subjective**
 Comment block answering:
-1. How the agent communicated significance in Q3 — did it use the p-value correctly and state a threshold (typically 0.05)?
+1. How the agent reported the correlation in Q3 — did it communicate the result sensibly, describing the strength and direction of the relationship and noting how confident we can be in it (using the Pearson r and p-value)?
 2. A specific surprise (more or less capable than expected) with a concrete example.
 3. One additional useful tool, with what it would do and what questions it would answer (e.g. group-by-region aggregation, year-over-year change, filtering by a threshold).
 
