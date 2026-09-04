@@ -73,7 +73,7 @@ Idempotency = running the operation N times has the same effect as running it on
 
 # Part 2: Project — Extract + Load Pipeline (`project_09.py`)
 
-**Overall check:** fetches full-year 2023 weather for a chosen city and upserts it into `weather_raw`, safely re-runnable. Column names must exactly match `weather_raw` (this data feeds the Week 4 model later).
+**Overall check:** fetches full-year 2023 weather for a chosen city and upserts it into `weather_raw`, safely re-runnable. Column names must exactly match `weather_raw` (this data feeds the Weeks 3–4 classifier later).
 
 ### Step 1: Extract — **Objective (approach)**
 Calls Open-Meteo archive API for 2023-01-01 to 2023-12-31 with the four daily variables; uses `response.raise_for_status()`; prints a response summary.
