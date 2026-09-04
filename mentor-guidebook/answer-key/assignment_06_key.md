@@ -120,5 +120,5 @@ A deliberately hard question (vague, cross-document, or absent info). Prints ful
 2. A different real use case (not coffee) — internal HR/policy Q&A, customer support docs, legal/medical knowledge bases, etc.
 3. A failure mode RAG can't fully prevent even with good retrieval — e.g. the model misreading/mis-synthesizing correct chunks, or confidently over-generalizing; retrieval quality doesn't guarantee generation quality.
 
-### Optional Extensions (A/C/D) — **Not required**
+### Optional Extensions (A/B/C) — **Not required**
 Keyword-vs-semantic comparison, adding a new document (demonstrates RAG updates without retraining — a good fine-tuning contrast), and the pgvector persistent store (needs Docker). Grade lightly if attempted.
