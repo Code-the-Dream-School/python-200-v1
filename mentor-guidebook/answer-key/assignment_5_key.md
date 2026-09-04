@@ -1,8 +1,6 @@
 # Assignment 5 Answer Key: AI Intro (LLMs & Prompt Engineering)
 
-**Mentor note:** This key covers Week 5 warmups (Chat Completions API, system messages, prompt engineering, Ollama) and the Job Application Helper chatbot mini-project. **Reproducibility caveat:** almost everything here calls a live LLM, so exact text output will differ for every student and every run. Grade the *technique and code pattern*, not the model's wording. The one fully deterministic answer is the chain-of-thought math (Prompt Q4) — that final number should be correct. The assignment includes its own **rubric** (120 pts) at the bottom of the lesson; point values below match it.
-
-**Rubric numbering note:** the rubric labels questions Q1–Q13, but the assignment text labels them by section (API Q1–4, System Q1–2, Prompt Q1–6, Ollama Q1). Mapping: API Q1–4 = rubric Q1–4; System Q1–2 = Q5–6; Prompt Q1–6 = Q7–12; Ollama = Q13.
+**Mentor note:** This key covers Week 5 warmups (Chat Completions API, system messages, prompt engineering, Ollama) and the Job Application Helper chatbot mini-project. **Reproducibility caveat:** almost everything here calls a live LLM, so exact text output will differ for every student and every run. Grade the *technique and code pattern*, not the model's wording. The one fully deterministic answer is the chain-of-thought math (Prompt Q4) — that final number should be correct. The assignment's own reviewer rubric (the hidden block at the bottom of the lesson) lists deliverables by section (API Question 1–4, System Question 1–2, Prompt Question 1–6, Ollama Question 1) and does not assign point values. The point weightings shown below are a suggested guide for mentors, not part of the assignment.
 
 ---
 
@@ -78,7 +76,7 @@ Ollama CLI output pasted as a comment; the equivalent OpenAI call made and print
 
 # Part 2: Mini-Project — Job Application Helper (`project_05.py`)
 
-**Overall check:** a working chatbot that accumulates conversation history, routes to a bullet-rewriter and cover-letter generator, runs a moderation check before each turn, and exits cleanly. Because it's LLM-driven, grade the structure and prompt-engineering technique. Point values match the lesson rubric.
+**Overall check:** a working chatbot that accumulates conversation history, routes to a bullet-rewriter and cover-letter generator, runs a moderation check before each turn, and exits cleanly. Because it is LLM-driven, grade the structure and prompt-engineering technique. The point values shown are a suggested weighting for mentors.
 
 ### Task 1: Setup and System Prompt — **Objective (approach) + Subjective** (10 pts)
 - `get_completion()` helper as given; client initialized after `load_dotenv()`.
