@@ -149,7 +149,7 @@ Split your work across two files: `train_classifier.py` (fetch, label, build, ev
 
 ### Task 1: Fetch the Data
 
-Use the free Open-Meteo historical API (no key required) to download one year of daily weather for a city of your choice. Use these four daily variables: `temperature_2m_max`, `temperature_2m_min`, `precipitation_sum`, and `wind_speed_10m_max_10m_max`.
+Use the free Open-Meteo historical API (no key required) to download one year of daily weather for a city of your choice. Use these four daily variables: `temperature_2m_max`, `temperature_2m_min`, `precipitation_sum`, and `wind_speed_10m_max`.
 
 Example — adapt the latitude, longitude, and dates to your city:
 
@@ -167,7 +167,7 @@ params = {
         "temperature_2m_max",
         "temperature_2m_min",
         "precipitation_sum",
-        "wind_speed_10m_max_10m_max",
+        "wind_speed_10m_max",
     ],
     "timezone": "America/New_York",
 }
