@@ -382,3 +382,5 @@ We care about this because a `DailyWeather` object states what it contains and w
     <summary>Show Answer</summary>
     b -- The thresholds are set up once and reused. A function would require threading all four values through every call site. This "configure once, apply many times" pattern is exactly what a class is good at, and it is the shape of the model component you will build in Week 4.
     </details>
+
+### [Return to Lesson 1 Landing Page](https://github.com/Code-the-Dream-School/python-200-v1/blob/update-landing-pages/lessons/01_production_python.md) ###
