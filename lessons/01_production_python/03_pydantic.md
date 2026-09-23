@@ -517,3 +517,5 @@ The most important habit from this lesson is about design rather than syntax: **
     <summary>Show Answer</summary>
     c -- Validation fails at the boundary with a precise location. Had it passed, the `None` would become a `NaN` in a DataFrame and surface much later as an opaque error from scikit-learn. If you would rather tolerate missing readings, that is a schema change (`list[float | None]`) -- a visible decision rather than an accident.
     </details>
+
+### [Return to Lesson 1 Landing Page](https://github.com/Code-the-Dream-School/python-200-v1/blob/update-landing-pages/lessons/01_production_python.md) ###
