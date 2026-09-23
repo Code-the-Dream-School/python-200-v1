@@ -537,3 +537,5 @@ A pytest test is a function named `test_*` in a file named `test_*.py` that uses
     <summary>Show Answer</summary>
     b -- A test that cannot fail is worse than no test, because it appears to provide coverage while providing none. Confirming that a test fails when the code is broken is a quick and worthwhile habit.
     </details>
+
+### [Return to Lesson 1 Landing Page](https://github.com/Code-the-Dream-School/python-200-v1/blob/update-landing-pages/lessons/01_production_python.md) ###   
