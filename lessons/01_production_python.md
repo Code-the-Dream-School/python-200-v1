@@ -18,17 +18,17 @@ By the end of this week you will be able to:
 
 ## Topics
 
-1. [Classes and Objects](01_classes.md)
+1. [Classes and Objects](https://github.com/Code-the-Dream-School/python-200-v1/blob/main/lessons/01_classes.md)
 Dictionaries are a reasonable way to hold data until a program grows. This lesson shows where they become inadequate, then introduces classes, which combine data with the operations that belong to it using `__init__`, attributes, methods, and `self`.
 
-2. [Dataclasses, Type Hints, and Docstrings](02_dataclasses_and_types.md)
+2. [Dataclasses, Type Hints, and Docstrings](https://github.com/Code-the-Dream-School/python-200-v1/blob/main/lessons/01_production_python/02_dataclasses_and_types.md)
 Most of the classes you write contain mainly data. The `dataclasses` module removes the repetitive code. Type hints state what a function expects and returns, and docstrings state what those values mean. Together they let your editor, your teammates, and you read your code without running it.
 
-3. [Validating Data at the Boundary](03_pydantic.md)
+3. [Validating Data at the Boundary](https://github.com/Code-the-Dream-School/python-200-v1/blob/main/lessons/01_production_python/03_pydantic.md)
 Type hints are documentation rather than enforcement. When data arrives from outside your program, such as from an API, a CSV file, or a form, you need something that actually checks it. Pydantic turns a schema into a validator, so invalid data fails at the edge of your system instead of several steps later.
 
-4. [Testing with pytest](04_pytest.md)
+4. [Testing with pytest](https://github.com/Code-the-Dream-School/python-200-v1/blob/main/lessons/01_production_python/04_pytest.md)
 A test is a small program that runs your code and asserts that something is true about the result. This lesson covers writing test functions, asserting on values, confirming that errors are raised when they should be, and reading pytest output when something fails.
 
-5. [Modules and Project Structure](05_modules.md)
+5. [Modules and Project Structure](https://github.com/Code-the-Dream-School/python-200-v1/blob/main/lessons/01_production_python/05_modules.md)
 How to turn a single script into a package. Covers modules, imports, the `if __name__ == "__main__"` guard, and a project layout that separates library code from the scripts that use it and the tests that check it.
