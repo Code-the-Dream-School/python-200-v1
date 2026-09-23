@@ -519,3 +519,5 @@ None of these three tools validate anything. They only describe.
     <summary>Show Answer</summary>
     b -- The type hint already says the value is a float. The docstring should add what the signature cannot express: the units (millimeters), the time period (the day), and how to interpret an edge case (0.0). Option a only restates the annotation.
     </details>
+
+### [Return to Lesson 1 Landing Page](https://github.com/Code-the-Dream-School/python-200-v1/blob/update-landing-pages/lessons/01_production_python.md) ###
