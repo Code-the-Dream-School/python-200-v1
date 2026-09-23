@@ -12,11 +12,11 @@ We use one dataset across the whole machine learning block: daily weather. You v
 
 ## Topics
 
-1. [Introduction to machine learning](02_ML_intro/01_machine_learning.md)
+1. [Introduction to machine learning](https://github.com/Code-the-Dream-School/python-200-v1/blob/main/lessons/02_ML_intro/01_machine_learning.md)
 A big-picture overview of the machine learning landscape: what machine learning is, how it relates to AI and deep learning, and the main types of learning (supervised, unsupervised, reinforcement).
 
-2. [Introduction to scikit-learn](02_ML_intro/02_scikit_learn.md)
+2. [Introduction to scikit-learn](https://github.com/Code-the-Dream-School/python-200-v1/blob/main/lessons/02_ML_intro/02_scikit_learn.md)
 An introduction to scikit-learn, the most common library for classical ML in Python. We look at its `create → fit → predict` API and see it in action with a couple of short examples.
 
-3. [Linear Regression](02_ML_intro/03_linear_regression.md)
+3. [Linear Regression](https://github.com/Code-the-Dream-School/python-200-v1/blob/main/lessons/02_ML_intro/03_linear_regression.md)
 Our first real ML model. We take a brief look at the features, then train a linear regression model on daily weather data, evaluate it with RMSE and R², and build intuition for what those metrics mean and how adding features changes the model.
