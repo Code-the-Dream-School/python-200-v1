@@ -13,7 +13,7 @@ This first week is about getting situated conceptually. By the end of it, you wi
 1. [Cloud Overview](https://github.com/Code-the-Dream-School/python-200-v1/blob/d8317841708fb5e8173b874dd3a295d485c35947/lessons/08_cloud_intro/01_cloud_overview.md)
 A platform-agnostic introduction to cloud computing: what it is, why it matters, and what changes when you move from running code on your laptop to running it in the cloud. Covers the core concepts — IaaS, PaaS, SaaS, managed services, scaling models — that you will encounter regardless of which cloud provider you use.
 
-2. [The Cloud Provider Landscape](08_cloud_intro/02_cloud_landscape.md)
+2. [The Cloud Provider Landscape](https://github.com/Code-the-Dream-School/python-200-v1/blob/main/lessons/08_cloud_intro/02_cloud_landscape.md)
 A survey of the cloud provider ecosystem: the big three hyperscalers (AWS, GCP, Azure), developer-tier platforms (DigitalOcean, Render, Cloudflare), and backend-as-a-service platforms (Firebase, Supabase). Includes a service taxonomy that maps common data engineering categories — compute, object storage, managed databases, LLM APIs, ML platforms — across providers, and closes with an explanation of why this course uses Supabase for weeks 9–11.
 
 ## Week 8 Assignments
