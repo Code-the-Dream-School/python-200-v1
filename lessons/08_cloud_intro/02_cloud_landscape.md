@@ -66,7 +66,17 @@ When you encounter a new cloud provider, it helps to know what categories of ser
 
 Most projects don't use one provider for everything. A common pattern: GCP BigQuery for analytics, Supabase for the application database, Cloudflare for edge compute, OpenAI directly for LLM access. Knowing the service taxonomy helps you read job descriptions, evaluate architectural decisions, and ask good questions when you join a new team.
 
-The serverless services you'll deploy to in this class's practicum are Lambda, EventBridge, IAM, CloudWatch, and Parameter Store.
+### A Preview of the Practicum's AWS Stack
+
+The hands-on work in *this* course uses Supabase, and you do not need an AWS account for anything here. The practicum that follows this course, however, deploys a pipeline on AWS using a small set of serverless services. It is worth knowing what each one does before you get there, so the names are familiar rather than new. You will not set any of these up in this course -- this is orientation, not a task.
+
+- **Lambda** runs your code without a server you manage. You hand AWS a function, and it runs on demand and bills only for the time the function is actually executing. This is the serverless compute from the taxonomy table above, and it is where the practicum runs its pipeline code.
+- **EventBridge** triggers a Lambda on a schedule, for example "run this every morning at 6 a.m." It is what turns a function into a pipeline that runs on its own.
+- **IAM** (Identity and Access Management) controls *permissions*: which service is allowed to do what. Instead of passwords, AWS services are given *roles* that grant specific, limited access, such as "this Lambda may read from this one storage bucket and nothing else."
+- **CloudWatch** collects logs and metrics, so you can see what a Lambda did and whether it failed. It is the cloud equivalent of reading your program's output.
+- **Parameter Store** holds configuration and secrets, such as an API key, so they are not hard-coded into your function.
+
+You will see the same ideas in a different form during weeks 9 through 11, where Supabase stores your data and Prefect schedules and logs your pipeline. The concepts -- run code on demand, schedule it, control access, log what happened, store secrets safely -- carry across every cloud provider.
 
 ## What Comes Next
 

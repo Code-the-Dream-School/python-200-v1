@@ -1,5 +1,5 @@
 # Knowledge Augmentation for LLMs
-Modern large language models are astonishingly good at generating fluent, human-like text. But as we learned in [Week 1](../05_AI_intro/README.md) of the AI module, they are ultimately very sophisticated autocomplete systems. They produce language that sounds right, but were not trained to generate *truth*.
+Modern large language models are astonishingly good at generating fluent, human-like text. But as we learned in [Week 5](../05_AI_intro.md), they are ultimately very sophisticated autocomplete systems. They produce language that sounds right, but were not trained to generate *truth*.
 
 This is why hallucinations happen: the model fills gaps with confident guesses, misremembers facts, or invents details that fit the conversation. Even when the model is trying to be helpful, it may prioritize what it thinks you want to hear over what is actually correct. And because LLMs are trained on data from the past, with a fixed cutoff date, they rapidly fall out of sync with current information.
 

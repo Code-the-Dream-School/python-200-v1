@@ -1,26 +1,26 @@
-# Week 4: Applied Machine Learning
+# Week 4: From Model to Reusable Component
 
-Welcome to Week 4! Over the past two weeks you trained classifiers and evaluated them using accuracy, precision, recall, F1, and the confusion matrix. Those tools are essential — but they leave two important questions unanswered.
+Welcome to Week 4! Over the last two weeks you trained models and, in Week 3, saved one to disk. This week you take that saved model and turn it into a **reusable component**: a small, importable package with a clean interface, tests, and everything another program needs to use it without knowing how it was built.
 
-The first question is **how do you know if 0.5 is the right decision threshold?** Every classifier we have built outputs a probability, and we have always converted that to a prediction by asking "is the probability above 0.5?" That cutoff is a convention, not a law. Depending on what kind of errors you can tolerate, a different threshold might serve you better. This week introduces a tool — the ROC curve — that lets you visualize your classifier's behavior across every possible threshold at once, and a single summary metric, AUC, that captures model quality independently of any threshold choice.
+This is the payoff of Week 1. In Week 1 you learned classes, dataclasses, type hints, docstrings, `pytest`, and packaging, using small examples. This week you apply all of it to something real: the weather classifier. By the end you will have a `weather_model` package that any script can import and call, which is exactly the shape of the component a cloud pipeline will load in Week 10.
 
-The second question is **how do you actually use a trained model?** So far, every script we have written trains a model and immediately uses it in the same session. In a real project, training and prediction happen at different times, in different scripts, or on different machines. A model needs to be saved to disk after training and loaded later for use. This week introduces `joblib`, the standard tool for this, and shows why saving the entire preprocessing pipeline — not just the model weights — is the right approach.
+Why does this matter? A trained model saved as a `.pkl` file is useful, but awkward to reuse. Every script that wants a prediction has to know where the file lives, load it correctly, prepare the input in exactly the right way, and interpret the raw output. If any of those details changes, every script breaks. A component hides those details behind a simple `predict()` method. Callers depend on the method, not on the mechanics. This is the difference between a model that works on your machine and a model a team can build a pipeline around.
 
-In between, the week covers one more skill that pays for itself immediately: **systematic hyperparameter tuning with GridSearchCV**. Rather than guessing a value for `k` or `C` and hoping for the best, GridSearchCV automates the search by evaluating every candidate in a grid using cross-validation and surfaces the best configuration with a single call.
+By the end of this week you will be able to:
 
-The running example throughout the week is a weather classifier: a model that takes daily weather features and predicts whether conditions are good for an outdoor run. You will build this classifier, tune it, and save it to disk. In later weeks, that saved file becomes a reusable pipeline component — a concrete first step toward the end-to-end data pipeline you will build by the end of the course.
+- Refactor a training-and-prediction script into a class with a clean `predict()` method
+- Load a saved model once in `__init__` and reuse it for many predictions
+- Add type hints, docstrings, and input validation so the component is safe and self-documenting
+- Write `pytest` tests that cover both correct predictions and error handling
+- Package the component so any script can import it
 
 ## Topics
 
-1. [ROC Curves and AUC](https://github.com/Code-the-Dream-School/python-200-v1/blob/6d03052b8c84b2fa740c7e075952fbe22ee98d3c/lessons/04_applied_ML/01_roc_auc.md)
-Beyond accuracy: understanding the threshold problem, visualizing classifier performance with ROC curves, and using AUC to compare models without committing to a single cutoff.
+1. [From Notebook to Component](04_applied_ML/01_from_notebook_to_component.md)
+Why a saved model is not yet a reusable component, what a good interface looks like, and why tests are what make a refactor safe. This lesson frames the work of the week.
 
-2. [Hyperparameter Tuning with GridSearchCV](https://github.com/Code-the-Dream-School/python-200-v1/blob/6d03052b8c84b2fa740c7e075952fbe22ee98d3c/lessons/04_applied_ML/02_gridsearch.md)
-Systematic hyperparameter search using cross-validated grid search. Covers `GridSearchCV`, `param_grid`, `best_params_`, and how to combine a Pipeline with a grid search for a clean, reproducible tuning workflow.
+2. [Building the WeatherClassifier Class](04_applied_ML/02_the_classifier_class.md)
+The core of the week. We write a `WeatherClassifier` class that loads the saved pipeline once in `__init__` and exposes a `predict()` method, returning a small `Prediction` dataclass. We add type hints, docstrings, and validation for bad input.
 
-3. [Model Persistence with joblib](https://github.com/Code-the-Dream-School/python-200-v1/blob/6d03052b8c84b2fa740c7e075952fbe22ee98d3c/lessons/04_applied_ML/03_model_persistence.md)
-Saving a trained model to disk with `joblib.dump` and loading it in a separate script with `joblib.load`. Covers why you should serialize the full sklearn Pipeline rather than the model alone, and what to document to keep a saved model usable over time.
-
-## Week 4 Assignments
-
-Once you finish the lessons, scroll down to review assignment instructions in order to practice these skills and build the weather classifier you will reuse later in the course.
+3. [Packaging and Testing the Component](04_applied_ML/03_packaging_and_testing.md)
+We turn the class into an importable `weather_model` package, write a `pytest` suite covering predictions and error paths, and write a `predict_weather.py` script that uses it. This is the exact layout your Week 4 assignment and the Week 10 pipeline depend on.

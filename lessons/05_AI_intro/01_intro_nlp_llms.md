@@ -294,7 +294,7 @@ print(embeddings.shape)
 In this case, each summary is projected to vector that's a little more than 1500-dimensions. 
 
 ### Visualize embeddings
-It is impossible to visualize a 1500-dimension vector space directly, so we will use our old stand-by from Week 2, principal component analysis (PCA), to project the 1500-dimension embedding to a 2D space to create more intuitive plots. It makes more clear the similarity relations among the embeddings, revealing the semantic structure between the summaries. 
+It is impossible to visualize a 1500-dimension vector space directly, so we will use principal component analysis (PCA), the technique from the optional Week 3 lesson, to project the 1500-dimension embedding to a 2D space to create more intuitive plots. It makes more clear the similarity relations among the embeddings, revealing the semantic structure between the summaries. 
 
 
 ```python

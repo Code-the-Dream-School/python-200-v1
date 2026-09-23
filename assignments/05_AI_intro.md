@@ -246,7 +246,9 @@ This isn't a toy. With a little polish, the chatbot you build here is something 
 
 *~20 minutes*
 
-Load your API key and initialize the client. Then define a `get_completion()` helper function (as seen in the prompt engineering lesson) that takes a `messages` list and returns the model's text response:
+Load your API key and initialize the client. Then define a `get_completion()` helper function (as seen in the prompt engineering lesson) that takes a `messages` list and returns the model's text response.
+
+Use the helper below as written — keep the function name `get_completion`, since later tasks call it by this name. The parameter defaults (`model`, `temperature`, `max_completion_tokens`) are reasonable starting values you may adjust:
 
 ```python
 from dotenv import load_dotenv
@@ -287,6 +289,8 @@ Your function should:
 1. Use **delimiters** to clearly separate the user's bullet points from your instructions
 2. Ask for the output as a **JSON list** where each item has `"original"` and `"improved"` keys
 3. Parse the JSON response and print both versions of each bullet side by side
+
+Keep the function name `rewrite_bullets` and the JSON keys `"original"` and `"improved"` exactly as written — the chatbot in Task 5 calls this function, and the printing step depends on those keys. The prompt wording inside the function is an example you can adapt:
 
 ```python
 def rewrite_bullets(bullets: list[str]) -> list[dict]:
@@ -338,6 +342,8 @@ Write a `generate_cover_letter()` function that takes a job title and a brief de
 
 Use **few-shot prompting**: include at least two examples of strong cover letter openings in your prompt before asking for the new one. Your examples should demonstrate the tone and style you want — confident, specific, and not generic.
 
+Keep the function name `generate_cover_letter` and its two parameters as written — the chatbot in Task 5 calls it. The two example openings inside the prompt below are illustrative; you may keep them or write your own:
+
 ```python
 def generate_cover_letter(job_title: str, background: str) -> str:
     prompt = f"""
@@ -375,12 +381,12 @@ def generate_cover_letter(job_title: str, background: str) -> str:
     # Your code here: call get_completion() and return the result
 ```
 
-Test it with:
+Test it with (example values — you may use these or your own):
 
 ```python
 job_title = "Junior Data Engineer"
 background = "Five years of experience as a middle school math teacher; recently completed \
-a Python course and built data pipelines using Prefect and Pandas."
+a Python course and built data pipelines using Pandas."
 ```
 
 Print the generated paragraph. Add a comment: *Why did you choose those particular examples? What does the few-shot pattern help control in the output?*
@@ -402,6 +408,8 @@ Write an `is_safe(text)` function that:
 1. Calls `client.moderations.create()` with `model="omni-moderation-latest"`
 2. Returns `True` if the input is not flagged, `False` if it is
 3. Prints a short, respectful message if the input is flagged, asking the user to rephrase
+
+Keep the function name `is_safe` and the moderation model string `"omni-moderation-latest"` exactly as written — the chatbot in Task 5 calls `is_safe`, and the model string is the specific endpoint used here:
 
 ```python
 def is_safe(text: str) -> bool:
@@ -426,7 +434,7 @@ Test your function with at least two inputs — one that should pass and one tha
 
 *~30 minutes*
 
-Now assemble everything into a working chatbot. Use the starter code below as your structure — your job is to fill in the marked sections.
+Now assemble everything into a working chatbot. Use the starter code below as your structure — your job is to fill in the marked sections. Keep the `run_chatbot()` structure and the calls to `is_safe()`, `rewrite_bullets()`, `generate_cover_letter()`, and `get_completion()`; the surrounding print text and keyword triggers are examples you can adapt:
 
 ```python
 def run_chatbot():
@@ -520,33 +528,65 @@ if __name__ == "__main__":
 
 # Optional / Extension Tasks
 
-1. **Token budget tracker**: After each turn in the chatbot loop, print a running total of tokens used. Use the `.usage.total_tokens` field on the response object. Warn the user when they cross a threshold you define (e.g., 2,000 tokens).
+These are all optional. You may skip any or all of them, and you will not lose points for doing so.
 
-2. **Swap in Ollama**: Modify Task 5 to route the regular chat turns to your local `qwen3:0.6b` model using the Ollama Python API. Compare the response quality to `gpt-4o-mini`. What tradeoffs do you notice?
+1. **(Optional) Token budget tracker**: After each turn in the chatbot loop, print a running total of tokens used. Use the `.usage.total_tokens` field on the response object. Warn the user when they cross a threshold you define (e.g., 2,000 tokens).
 
-3. **Resume upload**: Instead of collecting bullets interactively, let the user specify a `.txt` file path at the start of the session and read the bullets from it. Pass the full list through `rewrite_bullets()` automatically.
+2. **(Optional) Swap in Ollama**: Modify Task 5 to route the regular chat turns to your local `qwen3:0.6b` model using the Ollama Python API. Compare the response quality to `gpt-4o-mini`. What tradeoffs do you notice?
 
-4. **Confidence-aware output**: Extend the JSON schema in Task 2 to include a `"confidence"` field (float, 0–1). If confidence is below 0.7, have the bot print a note flagging that bullet for the user to review carefully.
+3. **(Optional) Resume upload**: Instead of collecting bullets interactively, let the user specify a `.txt` file path at the start of the session and read the bullets from it. Pass the full list through `rewrite_bullets()` automatically.
 
-5. **Top-p experiment** (add to warmup): Add a question exploring `top_p`. Set `temperature=1.0` and vary `top_p` between `0.1`, `0.5`, and `1.0` for the same prompt. Print and compare the results. How does it differ from what you observed when varying `temperature`?
+4. **(Optional) Confidence-aware output**: Extend the JSON schema in Task 2 to include a `"confidence"` field (float, 0–1). If confidence is below 0.7, have the bot print a note flagging that bullet for the user to review carefully.
 
----
+5. **(Optional) Top-p experiment** (add to warmup): Add a question exploring `top_p`. Set `temperature=1.0` and vary `top_p` between `0.1`, `0.5`, and `1.0` for the same prompt. Print and compare the results. How does it differ from what you observed when varying `temperature`?
 
-# Rubric
 
-| Component | Points | What we're looking for |
-|---|---|---|
-| **Warmup: API basics (Q1–Q4)** | 15 | Calls work; `.choices[0].message.content`, `.model`, `.usage` accessed correctly; temperature experiment includes a comment showing genuine observation |
-| **Warmup: System messages (Q5–Q6)** | 10 | System message used correctly; conversation history constructed manually; comment shows understanding of statelesness |
-| **Warmup: Prompt engineering (Q7–Q12)** | 20 | Each technique (zero-shot, one-shot, few-shot, CoT, JSON output, delimiters) implemented correctly; comparison comments show genuine reflection |
-| **Warmup: Ollama (Q13)** | 5 | CLI output pasted as comment; OpenAI API call made; thoughtful comparison comment |
-| **Project Task 1: System prompt** | 10 | Prompt is specific (role, audience, constraints); comment explains at least one deliberate design choice |
-| **Project Task 2: Bullet rewriter** | 15 | Delimiters used; JSON parsed correctly; original and improved bullets printed side by side |
-| **Project Task 3: Cover letter** | 10 | Two or more few-shot examples present in the prompt; output is tailored to the input; comment explains example choices |
-| **Project Task 4: Moderation** | 5 | Moderation check runs before API call; flagged and unflagged inputs both tested and printed |
-| **Project Task 5: Chatbot loop** | 15 | History accumulates correctly across turns; moderation wired in; bullet and cover letter features accessible from the loop; exits cleanly |
-| **Project Task 6: Ethics reflection** | 10 | At least 2 of 3 questions addressed; responses show genuine engagement rather than surface-level answers |
-| **Code quality** | 5 | Outputs labeled; sections marked with comments; code runs without errors |
-| **Total** | **120** | |
+<details>
+<summary>Rubric (for AirHub reviewer and mentors)</summary>
 
----
+**General grading notes:**
+
+- This assignment is about applying LLM techniques, not reproducing exact text. Almost every output here is **LLM-generated and nondeterministic**, and many inputs are **student-chosen** (personas, system prompts, the second-persona choice, bullet points, cover-letter job/background, moderation test phrases, ethics answers). Grade whether the required technique and structure are present — do **not** fail a student because their wording, the model's reply, or a sample value differs from any reference or from another student.
+- **File paths and folder layout** (`assignments_05/`, `warmup_05.py`, `project_05.py`, the `.env` location) are enforced by any automated run, not by the reviewer's inspection. Do not fail a submission for a path or folder structure you cannot verify.
+- Exact-vs-example labels used below:
+  - `Use exactly as written (later tasks depend on these names)` — hold the line on these identifiers/strings.
+  - `Example — adapt to your own values` — a differing value must **not** be failed.
+
+### Required Deliverables/Tasks
+
+Warmup — all in `warmup_05.py`, with each section/question marked by a comment and outputs printed with labels.
+
+- **API Question 1** — Make a chat completion with model `"gpt-4o-mini"` and the given prompt; print the response *text* (not the whole object), the responding model name, and the total tokens used, each labeled. `"gpt-4o-mini"` `Use exactly as written (later tasks depend on these names)`; the prompt string is provided, its answer text varies.
+- **API Question 2** — Run the same prompt at temperatures `0`, `0.7`, and `1.5`; print each labeled by temperature; include a comment on how outputs differ and which temperature suits reproducible output. `temperatures = [0, 0.7, 1.5]` `Use exactly as written (later tasks depend on these names)`; the prompt is `Example — adapt to your own values`.
+- **API Question 3** — One API call with `n=3` and `temperature=1.0`; iterate `response.choices` and print all three completions.
+- **API Question 4** — Set `max_tokens=15` on a normally-long prompt; print the (cut-off) result; comment on what happened and why `max_tokens` is useful in real apps.
+- **System Question 1** — Use a `system` message to set a persona, ask a question, print the reply; then change to a different persona (student's choice), ask again, print, and comment on what changed. Personas and replies vary.
+- **System Question 2** — Build the given multi-message conversation manually (no loop/input) and send it in one call; print the reply; comment on why the model "knows" the name despite being stateless. The message list is provided.
+- **Prompt Question 1 (Zero-Shot)** — Classify the three given reviews as `positive` / `negative` / `mixed` with no examples; print each labeled by review number.
+- **Prompt Question 2 (One-Shot)** — Same task with one example added; print results; comment on any change in format/consistency vs Q1.
+- **Prompt Question 3 (Few-Shot)** — Same task with three examples (at least one positive, one negative, one mixed); print results; comment comparing zero/one/few-shot and when to use each.
+- **Prompt Question 4 (Chain of Thought)** — Prompt the model to show step-by-step reasoning on the given salary problem, with the final answer clearly labeled; print the full response; comment on why step-by-step reasoning helps. Reasoning wording varies — do not fail on phrasing.
+- **Prompt Question 5 (Structured Output)** — Ask for output as valid JSON with keys `sentiment`, `confidence` (float 0–1), and `reason`; print raw response, then `json.loads()` it and print each field labeled; wrap parsing in `try/except` that prints the raw response on failure. Keys `sentiment`, `confidence`, `reason` `Use exactly as written (later tasks depend on these names)`.
+- **Prompt Question 6 (Delimiters)** — Use triple-backtick delimiters to separate instructions from user text on the given instruction passage; then send a second, non-instruction passage and confirm the model returns exactly `No steps provided.`; comment on what delimiters prevent.
+- **Ollama Question 1** — Run the given `ollama run qwen3:0.6b ...` command, paste its output as a comment; also make the equivalent OpenAI API call and print its response; comment comparing the two plus one advantage and one disadvantage of running locally. Local install/output is not reviewer-verifiable — accept the pasted comment as evidence.
+
+Project — all in `project_05.py`.
+
+- **Task 1: Setup and system prompt** — Load the key, initialize the client, define the `get_completion()` helper, and write a specific job-application-coach system prompt covering role, who it helps, and at least the three listed behavioral constraints; add a comment explaining one deliberate design choice. `get_completion` `Use exactly as written (later tasks depend on these names)`; the system prompt wording is the student's own.
+- **Task 2: Bullet rewriter** — `rewrite_bullets()` that uses delimiters, requests a JSON list of `{"original", "improved"}` items, parses it, and prints both versions side by side; test with the starter bullets; comment on why the bullets are weak. Function name `rewrite_bullets` and keys `"original"`/`"improved"` `Use exactly as written (later tasks depend on these names)`; the starter bullets and prompt wording are `Example — adapt to your own values`.
+- **Task 3: Cover letter generator** — `generate_cover_letter(job_title, background)` using few-shot prompting with at least two example openings; returns an opening paragraph; test it and print; comment on the example choices and what few-shot controls. Function name and signature `Use exactly as written (later tasks depend on these names)`; the in-prompt examples and the test `job_title`/`background` are `Example — adapt to your own values`.
+- **Task 4: Moderation check** — `is_safe(text)` that calls `client.moderations.create(model="omni-moderation-latest", ...)`, returns `True` if not flagged and `False` if flagged, and prints a respectful rephrase message when flagged; test with at least one passing and one flagged input and print each result. Function name `is_safe` and model string `"omni-moderation-latest"` `Use exactly as written (later tasks depend on these names)`; test phrases vary.
+- **Task 5: The chatbot loop** — `run_chatbot()` that seeds history with the system prompt, loops on user input, exits on `quit`/`exit`, skips empty input, runs `is_safe()` before anything else, routes bullet/resume keywords to `rewrite_bullets()` and "cover letter" to `generate_cover_letter()`, and otherwise appends the user message, calls `get_completion(messages)`, prints the reply, and appends the reply as an assistant message so history accumulates. Function/call names `Use exactly as written (later tasks depend on these names)`; the printed banner text and trigger keywords are `Example — adapt to your own values`.
+- **Task 6: Ethics reflection** — Either Option A (a comment block of at least 3–5 sentences at the bottom of `project_05.py`) **or** Option B (a 2–3 minute video link pasted as a comment), with a note stating which format was chosen, responding to at least two of the three listed questions. Both formats earn full credit — do not require the comment-block form if a video link is provided.
+
+### Optional Deliverables/Tasks
+
+Everything under "Optional / Extension Tasks" is skippable. **Do not fail a student for omitting any of these.** If attempted, grade only that it works as described.
+
+- **(Optional) Token budget tracker** — Print a running total of tokens (`.usage.total_tokens`) after each chatbot turn and warn past a student-defined threshold.
+- **(Optional) Swap in Ollama** — Route regular chat turns to a local `qwen3:0.6b` model via the Ollama Python API and compare quality/tradeoffs.
+- **(Optional) Resume upload** — Read bullets from a user-specified `.txt` file path and pass them through `rewrite_bullets()` automatically. The file path is user-supplied at runtime — not reviewer-verifiable.
+- **(Optional) Confidence-aware output** — Add a `"confidence"` (float 0–1) field to the Task 2 JSON and flag bullets below 0.7 for review.
+- **(Optional) Top-p experiment** — Add a warmup question varying `top_p` (`0.1`, `0.5`, `1.0`) at `temperature=1.0` and compare with the temperature results.
+
+</details>

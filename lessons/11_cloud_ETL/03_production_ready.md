@@ -194,4 +194,4 @@ You've now built a cloud ETL pipeline from scratch:
 - Monitor through a UI
 - Recover gracefully from transient failures
 
-That is Week 1 pipelines + Week 4 model persistence + Week 9 database writes + Week 10 double-transform, all working together in a realistic workflow.
+That is the Week 4 model component + Week 9 database writes + the Week 10 double-transform and Prefect flow, hardened into a realistic scheduled workflow.

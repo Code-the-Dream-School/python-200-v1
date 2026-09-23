@@ -1,312 +1,215 @@
 # Week 4 Assignments
 
-This week's assignments build on the classifier skills from weeks 2–3 and introduce three new tools: ROC curves for threshold-independent evaluation, GridSearchCV for systematic hyperparameter tuning, and joblib for saving and loading trained models.
+This week you turn the model you saved in Week 3 into a reusable component. This assignment applies everything from Week 1 (classes, dataclasses, type hints, docstrings, `pytest`, and packaging) to a real machine learning model.
 
-The mini-project asks you to build a weather classifier from scratch — the same classifier introduced in the lessons — and save it to disk. In later weeks, you will load this saved model and use it as a component inside a larger data pipeline.
-
-As always, the warmup exercises build muscle memory for the core mechanics. Try to work through them without AI assistance. The mini-project is intentionally open-ended: there is no single right answer, and your choices and reasoning matter as much as the final output.
+The warmup exercises rebuild the core mechanics quickly. The project is a single, guided build: the `weather_model` package that a cloud pipeline will import in Week 10. As in Week 1, **the structure of what you submit is part of what is being assessed.**
 
 ---
 
 # Submission Instructions
 
-In your `python200-homework` repository, create a folder called `assignments_04/`. Inside that folder, create:
+In your `python200-homework` repository, create a folder called `assignments_04/`. Inside it, build this structure:
 
-1. `warmup_04.py` — for the warmup exercises
-2. `train_weather_classifier.py` — the training script for the mini-project
-3. `predict_weather.py` — the prediction script for the mini-project
-4. `models/` — directory containing your saved `.pkl` and metadata files
-5. `outputs/` — for any plots your code saves
+```text
+assignments_04/
+├── warmup_04.py                        <- Part 1: the warmup exercises
+├── weather_classification.csv          <- copied from the course repo (see below)
+├── weather_model/                      <- Part 2: your component
+│   ├── __init__.py
+│   └── classifier.py
+├── tests/
+│   └── test_classifier.py
+├── models/
+│   ├── weather_classifier.pkl          <- copied from your Week 3 work
+│   └── weather_classifier_metadata.json
+├── conftest.py                         <- empty file (see below)
+└── predict_weather.py
+```
 
-When finished, commit and open a PR as described in the [assignments README](https://github.com/Code-the-Dream-School/python-200/blob/main/assignments/README.md).
+Two files to copy in before you start:
 
-**Primary submission**: A link to your open GitHub PR.
+- Copy `weather_classification.csv` from `lessons/03_ML_classification/resources/` into `assignments_04/`. The warmups and the training step use it.
+- Copy the `weather_classifier.pkl` and `weather_classifier_metadata.json` you saved in the Week 3 assignment into `assignments_04/models/`. If you do not have them, retrain and save a model using your Week 3 `train_classifier.py`.
+
+Create an **empty** file called `conftest.py` at the top of `assignments_04/`, exactly as you did in Week 1. It lets `pytest` import your `weather_model` package when run from `assignments_04/`. Without it, the tests fail with `ModuleNotFoundError: No module named 'weather_model'`.
+
+Install this week's packages if needed:
+
+```bash
+uv pip install scikit-learn joblib pytest
+```
+
+When finished, commit and open a PR as described in the [assignments README](README.md).
+
+**Primary submission**: A link to your open GitHub PR. Your grader will run `pytest` from inside `assignments_04/`, so make sure it passes from there.
 
 ---
 
 # Part 1: Warmup Exercises
 
-Put all warmup exercises in a single file: `warmup_04.py`. Use comments to label each section (e.g., `# --- ROC and AUC ---` and `# Q1`). Use `print()` to display all outputs and save figures to `outputs/`.
+Put all warmup exercises in a single file: `warmup_04.py`. Use comments to mark each question. Use `print()` to display outputs.
 
-Run this setup block at the top of `warmup_04.py`:
+pytest will not discover `warmup_04.py` on its own, because the filename does not match `test_*.py`. Run its tests explicitly with:
 
-```python
-import os
-import numpy as np
-import matplotlib.pyplot as plt
-from sklearn.datasets import make_classification
-from sklearn.linear_model import LogisticRegression
-from sklearn.neighbors import KNeighborsClassifier
-from sklearn.tree import DecisionTreeClassifier
-from sklearn.preprocessing import StandardScaler
-from sklearn.pipeline import Pipeline
-from sklearn.model_selection import train_test_split, GridSearchCV, cross_val_score
-from sklearn.metrics import (
-    roc_curve,
-    roc_auc_score,
-    RocCurveDisplay,
-    classification_report,
-)
-import joblib
-
-os.makedirs("outputs", exist_ok=True)
-os.makedirs("models", exist_ok=True)
-
-# Synthetic dataset — binary classification, two informative features
-X, y = make_classification(
-    n_samples=1000,
-    n_features=10,
-    n_informative=4,
-    n_redundant=2,
-    random_state=42,
-)
-
-X_train, X_test, y_train, y_test = train_test_split(
-    X, y, test_size=0.2, random_state=42, stratify=y
-)
+```bash
+pytest warmup_04.py -v
 ```
 
----
+### Warmup Question 1
 
-## ROC and AUC
+Write a class `ModelInfo` that reads a JSON file once in `__init__` and stores its contents.
 
-### ROC Question 1
+- `__init__(self, path)` opens the file at `path`, loads it with `json.load`, and stores the result in `self.data`.
+- A method `feature_count(self) -> int` returns the number of items in `self.data["features"]`.
 
-Train a `LogisticRegression(max_iter=1000, random_state=42)` on the raw (unscaled) training data and a `KNeighborsClassifier(n_neighbors=5)` on the scaled training data. For each model:
-- Compute predicted probabilities on the test set using `.predict_proba()`
-- Compute and print the AUC score using `roc_auc_score`
+Create a small JSON file with a `"features"` list (you can write it from Python), build a `ModelInfo` from it, and print the feature count. Add a comment: why is loading the file in `__init__` better than loading it inside `feature_count()` if the method is called many times?
 
-Add a comment: which model has higher AUC? What does that tell you about which model better separates the two classes, independently of any threshold choice?
+### Warmup Question 2
 
-### ROC Question 2
+Write a dataclass `DayForecast` with three type-hinted fields: `date` (str), `high_c` (float), and `will_rain` (bool). Give it a method `summary(self) -> str` that returns a readable sentence such as `"2023-06-15: high 24.1C, rain expected"`.
 
-Plot both ROC curves on the same axes. Label each curve with the model name and its AUC score. Add the random-classifier diagonal. Save to `outputs/roc_comparison.png`.
+Create two `DayForecast` objects and print each summary. Add a comment: name one thing the `@dataclass` decorator wrote for you that you did not have to write by hand.
 
-Add a comment: at the point on each curve where TPR = 0.80, which model has the lower FPR? What does that mean practically — if you needed to catch 80% of positives, which model would produce fewer false alarms?
+### Warmup Question 3
 
-### ROC Question 3
+Write a function `parse_temperature(text: str) -> float` that converts a string like `"24.1"` to a float, and raises a `ValueError` with a message containing the word `"temperature"` when the text is not a number.
 
-Using the logistic regression from Q1, find the threshold that achieves the highest F1 score on the test set. To do this:
+Then write two pytest tests in the same file:
 
-1. Get `fpr`, `tpr`, and `thresholds` from `roc_curve(y_test, y_probs_lr)`.
-2. For each threshold, compute `y_pred = (y_probs_lr >= threshold).astype(int)` and calculate the F1 score.
-3. Print the threshold, TPR, FPR, and F1 at the optimum.
+- `test_parse_temperature_valid()` asserts that `parse_temperature("24.1")` returns `24.1` (use `pytest.approx`).
+- `test_parse_temperature_bad_input_raises()` uses `pytest.raises(ValueError, match="temperature")` to confirm that `parse_temperature("hot")` raises the right error.
 
-Add a comment: how does this optimal threshold compare to the default 0.5? In a real application, when would you choose a threshold lower than 0.5?
+Run `pytest warmup_04.py -v` and confirm both pass. Add a comment: what would `pytest.raises(ValueError)` without `match` fail to catch?
 
 ---
 
-## GridSearchCV
+# Part 2: Project — The `weather_model` Component
 
-### GridSearch Question 1
+You will package your Week 3 classifier into a component with a clean interface, a test suite, and a script that uses it. When you finish, another program can predict running weather with three lines of code and no knowledge of how the model was built.
 
-Build a Pipeline with a `StandardScaler` and a `LogisticRegression(max_iter=1000)`. Use `GridSearchCV` with `cv=5` and `scoring="roc_auc"` to search over `C` values `[0.001, 0.01, 0.1, 1.0, 10.0, 100.0]`.
+## Task 1: The `Prediction` Dataclass
 
-Print:
-- The best `C` value
-- The best CV AUC score
-- The test AUC of the best estimator
+In `weather_model/classifier.py`, write a dataclass `Prediction` with two type-hinted fields:
 
-Add a comment: did the grid search pick the same `C` you would have guessed by default? By how much did the test AUC change compared to the default `C=1.0`?
+- `label` (str) -- either `"good"` or `"skip"`
+- `probability` (float) -- the probability, from 0 to 1, that the day is good for running
 
-### GridSearch Question 2
+Give it a docstring.
 
-Run a second grid search using the same Pipeline, but this time replace the `LogisticRegression` with a `DecisionTreeClassifier(random_state=42)` and search over `max_depth` values `[2, 3, 5, 8, None]`.
+## Task 2: The `WeatherClassifier` Class
 
-Print the best `max_depth` and best CV AUC, then print the test AUC.
+In the same file, write a class `WeatherClassifier`.
 
-Add a comment: compare the best AUC from Q1 (logistic regression) to this one (decision tree). Which model would you bring into further development? Is AUC the only thing you would consider?
+`__init__(self, model_path)` must:
 
-### GridSearch Question 3
+- Accept a path to a saved `.pkl` file.
+- Raise a `FileNotFoundError` with a helpful message if no file exists at that path.
+- Otherwise load the pipeline with `joblib.load` and store it on `self`.
 
-Look at the `cv_results_` from either grid search. Print the mean and standard deviation of the CV AUC for each parameter value, sorted from best to worst.
+`predict(self, days)` must:
 
-Add a comment: find a case where two parameter values have similar mean scores but different standard deviations. If you had to choose between them, which would you pick and why?
+- Accept a list of dictionaries, each with the keys `temperature_2m_max`, `temperature_2m_min`, `precipitation_sum`, and `wind_speed_10m_max`.
+- Return an empty list if `days` is empty.
+- Raise a `ValueError` naming the missing features if any required feature is absent.
+- Select the four features in a fixed order, run the model, and return a list of `Prediction` objects, one per day, in the same order. Convert the model's `1` to `"good"` and `0` to `"skip"`, and take the probability of "good" from `predict_proba(...)[:, 1]`.
 
----
+Give the class and the `predict` method type-hinted signatures and docstrings, including a `Raises:` note where an error can be raised.
 
-## joblib
+## Task 3: The Package Entry Point
 
-### joblib Question 1
+Write `weather_model/__init__.py` so that `from weather_model import WeatherClassifier, Prediction` works. Include an `__all__` list.
 
-Take the best Pipeline from GridSearch Question 1 (the logistic regression pipeline). Save it to `models/warmup_model.pkl` using `joblib.dump`. Then load it back in the same script using `joblib.load` and confirm it makes identical predictions to the original:
+## Task 4: The Test Suite
 
-```python
-loaded_clf = joblib.load("models/warmup_model.pkl")
+Write tests in `tests/test_classifier.py`. They must pass when you run `pytest` from `assignments_04/`.
 
-original_preds = best_lr_pipe.predict(X_test)
-loaded_preds   = loaded_clf.predict(X_test)
+So the tests do not depend on any particular saved file, build a tiny model inside a fixture and save it to pytest's `tmp_path`, then load a `WeatherClassifier` from it. Write **at least six** tests covering both the success path and the error paths:
 
-assert (original_preds == loaded_preds).all(), "Predictions do not match!"
-print("Predictions match. Model saved and loaded successfully.")
-```
+1. A clearly good day is labeled `"good"`.
+2. A clearly bad day (cold, rainy, windy) is labeled `"skip"`.
+3. The returned probability is between 0 and 1.
+4. Passing three days returns three `Prediction` objects, in order.
+5. Passing an empty list returns an empty list.
+6. A day missing a required feature raises `ValueError` (use `pytest.raises(ValueError, match=...)`).
+7. Constructing a `WeatherClassifier` with a path to a missing file raises `FileNotFoundError` (use `match`).
 
-Add a comment: what would break if you saved only the logistic regression model (without the scaler) and then called `.predict(X_test)` on the loaded model, where `X_test` is unscaled?
+At least one test must use `@pytest.mark.parametrize` (for example, several days each with their expected label).
 
-### joblib Question 2
+> Before you submit, deliberately break one thing in `classifier.py` (for example, always return `"skip"`) and confirm that a test fails. A test that cannot fail is not protecting anything. Note in a comment which test caught the change, then undo the break.
 
-Demonstrate a minimal version of the train/predict split. In the same `warmup_04.py`:
+## Task 5: The Script
 
-1. Save the best logistic regression Pipeline to `models/warmup_model.pkl` (you may have already done this in Q1).
-2. Add a clearly labeled section — use a comment like `# --- Simulated prediction script ---`.
-3. In that section, load the model fresh from disk and use it to predict on three manually constructed rows:
+Write `predict_weather.py` that uses your **real** saved model in `models/weather_classifier.pkl`:
 
-```python
-import numpy as np
+1. Create a `WeatherClassifier` from the saved model.
+2. Predict for at least four hypothetical days covering clearly good, clearly bad, and borderline conditions.
+3. Print a readable line per day with the inputs, the label, and the probability.
 
-# Three hand-crafted test cases — raw, unscaled data
-new_samples = np.array([
-    [2.5,  1.2, -0.3,  0.8,  1.0, -0.5,  0.2,  0.9, -1.1,  0.4],
-    [-1.0, 0.5,  0.9, -0.7, -0.2,  1.3, -0.8,  0.1,  0.5, -0.3],
-    [0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0],
-])
-```
+Put the work in a `main()` function under an `if __name__ == "__main__":` guard.
 
-Print the predicted class and the probability for each row. Add a comment: what do you expect the all-zeros row to predict? Why?
+Add a comment explaining what would happen if you omitted the guard and another script imported `predict_weather.py` to reuse a helper.
 
----
+## Task 6: Reflection
 
-# Part 2: Mini-Project — Build the Weather Classifier
+At the bottom of `predict_weather.py`, in a comment block, answer:
 
-This project takes you through the full ML workflow — data, labels, training, evaluation, and persistence — using real weather data from the Open-Meteo API. The model you build here will be reused in a later week, when it becomes a transform step inside a cloud data pipeline.
-
-Your work should be split across two files, as described below.
-
----
-
-## File 1: `train_weather_classifier.py`
-
-This script does all the heavy lifting: data loading, label engineering, model selection, final evaluation, and saving.
-
-### Step 1: Fetch the Data
-
-Use the Open-Meteo historical API to download one year of daily weather data for a location of your choice. The API is free and requires no key. Use these four daily variables:
-
-- `temperature_2m_max` — daily high temperature (°C)
-- `temperature_2m_min` — daily low temperature (°C)
-- `precipitation_sum` — total precipitation (mm)
-- `wind_speed_10m_max` — maximum wind speed (km/h)
-
-An example request for Charlotte, NC:
-
-```python
-import requests
-import pandas as pd
-
-url = "https://archive-api.open-meteo.com/v1/archive"
-params = {
-    "latitude": 35.23,
-    "longitude": -80.84,
-    "start_date": "2023-01-01",
-    "end_date": "2023-12-31",
-    "daily": [
-        "temperature_2m_max",
-        "temperature_2m_min",
-        "precipitation_sum",
-        "wind_speed_10m_max",
-    ],
-    "timezone": "America/New_York",
-}
-response = requests.get(url, params=params)
-response.raise_for_status()
-df = pd.DataFrame(response.json()["daily"])
-df["date"] = pd.to_datetime(df["time"])
-df = df.drop("time", axis=1)
-```
-
-You are encouraged to pick your own city — the latitude and longitude are the only things that change. Print a summary of the dataset once it is loaded.
-
-### Step 2: Engineer Labels
-
-Define what "good for running" means in terms of your four numeric features. The lesson uses these thresholds as a starting point:
-
-| Feature | "Good for running" range |
-|---|---|
-| `temperature_2m_max` | 7 – 26 °C (45–79°F) |
-| `temperature_2m_min` | ≥ 0 °C (above freezing) |
-| `precipitation_sum` | < 3.0 mm |
-| `wind_speed_10m_max` | < 30 km/h |
-
-You may adjust these thresholds to reflect your city's climate or your own preferences — just document your choices in comments. Print the class distribution after labeling, and add a comment: what fraction of days in your dataset are labeled "good for running"? Does that seem reasonable given the climate where you chose?
-
-### Step 3: Train and Tune
-
-Split the data into train (80%) and test (20%) sets, stratifying on the label.
-
-Use `GridSearchCV` with a `Pipeline(StandardScaler, LogisticRegression)` to search over at least five values of `C`. Use `cv=5` and `scoring="roc_auc"`. Print:
-
-- The best `C` value and best CV AUC
-- A full classification report on the test set
-- The test AUC
-
-Then plot and save the ROC curve for the best estimator to `outputs/weather_roc.png`.
-
-### Step 4: Reflect on Evaluation
-
-Add a comment block (at least 4–6 sentences) addressing the following:
-
-- What does the AUC score tell you about this model's quality? Is it surprisingly good, surprisingly bad, or about what you expected?
-- Look at the precision and recall in the classification report. Which type of error (false positive vs. false negative) is more common? What would this mean in practice — would you rather the app over-recommend running or under-recommend it?
-- If you were setting the threshold for a real app, would you use the default 0.5? What would you change it to and why?
-
-### Step 5: Save the Model
-
-Save the best Pipeline to `models/weather_classifier.pkl` using `joblib.dump`. Save a metadata file to `models/weather_classifier_metadata.json` that includes:
-
-- Python version
-- scikit-learn version
-- Feature names (in order)
-- Best hyperparameters from GridSearchCV
-- Test AUC
-- Your city (latitude and longitude)
-- A brief description of the label thresholds you used
-
-Print a confirmation message once both files are saved.
-
----
-
-## File 2: `predict_weather.py`
-
-This script simulates how the trained model would be used in production. It should have **no training code** — no `fit`, no `GridSearchCV`, no raw data loading from the API.
-
-### Task 1: Load and Verify
-
-Load the Pipeline from `models/weather_classifier.pkl`. Load the metadata from `models/weather_classifier_metadata.json` and print the model's key metadata (city, features, test AUC).
-
-### Task 2: Predict on New Data
-
-Create a DataFrame of at least five hypothetical days, covering a range of conditions: clearly good days, clearly bad days, and at least one borderline case. Use the feature names from your metadata to make sure the columns match exactly.
-
-For each day, print:
-- The four input feature values
-- The predicted label (good / skip)
-- The model's confidence (probability of "good for running")
-
-### Task 3: Reflect
-
-Add a comment block answering the following:
-
-1. Pick the borderline case you included. What was the probability? Would you describe the model's answer as confident or uncertain? How would you handle a day where the model says 0.52?
-2. The training script and the prediction script are completely separate. What would break if someone ran `predict_weather.py` before `train_weather_classifier.py`? How would you make the error message more helpful?
-3. In a production system, the prediction script might run daily to classify tomorrow's weather forecast. What would need to change in `predict_weather.py` to support that? (You do not need to implement this — just describe it in a comment.)
+1. Your `predict()` selects the four features in a fixed order rather than using whatever order the caller passed. Describe a concrete bug this prevents.
+2. The graded tests train their own tiny model in a fixture instead of loading `models/weather_classifier.pkl`. Why is that a better design for a test suite than depending on the real file?
+3. In Week 10 a pipeline will import `WeatherClassifier` and call `predict()` on batches of weather records from a database. Name one thing about your component that makes it ready for that, and one thing you might add before it runs in production.
 
 ---
 
 # Optional Extensions
 
-## Extension A: Try a Second City (Low)
+## Extension A (Optional): Predict From a DataFrame (Low)
 
-Pick a second city with a noticeably different climate from your first (e.g., Miami if you chose Minneapolis). Pull the same year of data, apply the same label thresholds, and compare the class distributions. Which city has more "good for running" days? Does the model's AUC change when applied to that city's data? Why might it?
+Add a method `predict_frame(self, frame)` that accepts a pandas DataFrame instead of a list of dictionaries and returns the same list of `Prediction` objects. Add a test for it.
 
-## Extension B: Feature Engineering (Moderate)
+## Extension B (Optional): A Confidence Threshold (Moderate)
 
-The four raw features work well, but there may be additional signal in derived features. Consider adding:
-- A `temp_range` feature: `temperature_2m_max - temperature_2m_min`
-- Seasonal indicators: month of year encoded as a numeric variable
-- Lagged precipitation: whether the previous day was wet
+Add an optional parameter to `predict` that only labels a day `"good"` when the probability is above a caller-supplied threshold (for example 0.7), and `"skip"` otherwise. Add tests that show the same borderline day flips label as the threshold changes.
 
-Retrain with the expanded feature set and compare the AUC. Which added features (if any) improved the model? Update your metadata file to document the new feature list.
+## Extension C (Optional): Make It Installable (Moderate)
 
-## Extension C: Multiple Years (Moderate)
+Write a minimal `pyproject.toml` for `weather_model` and install it with `uv pip install -e .`. Confirm your tests pass when run from any directory, not just `assignments_04/`. Explain in a comment what changed.
 
-Expand the training data to two or three years instead of one. Does more training data improve the model's AUC? Is the improvement large or small? Add a brief comment with your finding.
+Good luck. The component you build this week is the one your pipeline will depend on later in the course.
+
+---
+
+<details>
+<summary>Rubric (for AirHub reviewer and mentors)</summary>
+
+### Required Deliverables/Tasks
+
+**General grading notes:**
+
+- **The graded test suite is self-contained.** The tests in `tests/` train a tiny model in a fixture, so they do not depend on the student's specific `weather_classifier.pkl`. They should pass on any correct submission. `predict_weather.py` uses the real copied model, whose exact probabilities vary by the student's Week 3 model -- do not fail a student for specific probability values.
+- **Class, dataclass, method, and feature names are exact.** `Use exactly as written (the tests and the Week 10 pipeline depend on these names)`: `WeatherClassifier`, `Prediction`, the `predict` method, the fields `label` and `probability`, and the feature keys `temperature_2m_max`, `temperature_2m_min`, `precipitation_sum`, `wind_speed_10m_max`.
+- **File paths and folder layout are enforced by the automated `pytest` run, not by inspection.** The reviewer cannot see the filesystem. Do not fail a student for a path you cannot verify; what matters is that `pytest` passes from `assignments_04/`. The warmup file `warmup_04.py` is intentionally not collected by a bare `pytest` run, so do not fail a student because it is not part of the discovered suite.
+- **Sample values are examples.** `Example — adapt to your own values`: the specific hypothetical days in `predict_weather.py` and in the tests.
+
+**Part 1 — `warmup_04.py`** (run with `pytest warmup_04.py -v`):
+
+- **Warmup Q1** — a `ModelInfo` class that loads a JSON file in `__init__` and a `feature_count()` method; a demo and a comment on why loading in `__init__` is better for repeated calls.
+- **Warmup Q2** — a `DayForecast` dataclass with three type-hinted fields and a `summary()` method; two objects printed; a comment naming something `@dataclass` generated.
+- **Warmup Q3** — a `parse_temperature` function that raises `ValueError` on bad input, plus `test_parse_temperature_valid` (using `pytest.approx`) and `test_parse_temperature_bad_input_raises` (using `pytest.raises(..., match="temperature")`); a comment on what `match` adds.
+
+**Part 2 — the `weather_model` package:**
+
+- **Task 1 — `Prediction` dataclass** in `weather_model/classifier.py` with `label: str` and `probability: float` and a docstring.
+- **Task 2 — `WeatherClassifier` class**: `__init__` raises `FileNotFoundError` for a missing file and otherwise loads the pipeline with `joblib`; `predict` returns `[]` for empty input, raises `ValueError` naming missing features, selects the four features in fixed order, and returns one `Prediction` per day (converting 1/0 to "good"/"skip" and taking the probability from column 1). Type hints and docstrings present.
+- **Task 3 — `weather_model/__init__.py`** re-exports `WeatherClassifier` and `Prediction` (so `from weather_model import WeatherClassifier` works) with an `__all__`.
+- **Task 4 — `tests/test_classifier.py`**: at least six tests covering the successes (good label, skip label, probability in range, one result per day in order, empty list) and the error paths (missing feature raises `ValueError`, missing file raises `FileNotFoundError`), using a `tmp_path`-based fixture and `pytest.raises(..., match=...)`. At least one test uses `@pytest.mark.parametrize`. Passes via `pytest` from `assignments_04/`.
+- **Task 5 — `predict_weather.py`**: loads the real saved model into a `WeatherClassifier`, predicts for at least four varied days, prints a readable line per day, with the work in `main()` under an `if __name__ == "__main__":` guard; a comment on omitting the guard.
+- **Task 6 — Reflection**: a comment block answering the three questions (a bug the fixed feature order prevents; why the test fixture trains its own model; one production-readiness point and one thing to add).
+
+### Optional Deliverables/Tasks
+
+**Do not fail a student for omitting any of these.** They are marked "(Optional)".
+
+- **Extension A (Optional)** — a `predict_frame` method accepting a DataFrame, with a test.
+- **Extension B (Optional)** — a confidence threshold parameter on `predict`, with tests showing a borderline day flips label as the threshold changes.
+- **Extension C (Optional)** — a minimal `pyproject.toml` and editable install, with a comment on what changed.
+
+</details>

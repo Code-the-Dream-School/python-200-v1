@@ -1,6 +1,6 @@
 # Connecting to Supabase from Python
 
-In Week 1 you built a Prefect pipeline that ran entirely on your local machine — it read files from disk, processed them, and wrote results back to disk. That pipeline did real work, but when the script finished, the output lived in a local folder on your laptop. If you deleted the folder, ran the script on a different machine, or wanted another script to pick up where it left off, you had a problem.
+Everything you have built so far has run entirely on your local machine — reading files from disk, processing them, and writing results back to disk or to memory. That work is real, but when a script finishes, its output lives in a local folder on your laptop. If you deleted the folder, ran the script on a different machine, or wanted another script to pick up where it left off, you had a problem.
 
 This week you fix that by moving data storage to the cloud. The service you will use is **Supabase** — a hosted Postgres database with a Python SDK that makes inserting and querying rows as simple as calling a method on an object. By the end of this lesson, you will have a Supabase project connected to a Python script and ready to receive data.
 

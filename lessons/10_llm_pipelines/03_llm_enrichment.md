@@ -166,22 +166,17 @@ Here is the full workflow from reading `weather_raw` to writing `weather_enriche
 
 ```python
 import os
-import json
-import pandas as pd
-import joblib
 from dotenv import load_dotenv
 from supabase import create_client
 from openai import OpenAI
+from weather_model import WeatherClassifier
 
 load_dotenv()
 supabase = create_client(os.getenv("SUPABASE_URL"), os.getenv("SUPABASE_KEY"))
 openai_client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
 
-# Load model and feature list
-clf = joblib.load("models/weather_classifier.pkl")
-with open("models/weather_classifier_metadata.json") as f:
-    metadata = json.load(f)
-FEATURES = metadata["features"]
+# Load the Week 4 component
+classifier = WeatherClassifier("models/weather_classifier.pkl")
 
 SYSTEM_PROMPT = (
     "You are writing a one-sentence running recommendation for a daily weather summary app. "
@@ -212,19 +207,16 @@ if not to_classify:
     exit()
 
 # --- ML Transform ---
-df = pd.DataFrame(to_classify)
-X = df[FEATURES]
-predictions   = clf.predict(X)
-probabilities = clf.predict_proba(X)[:, 1]
+predictions = classifier.predict(to_classify)
 
 enrichment_records = [
     {
-        "date":             to_classify[i]["date"],
-        "good_for_running": bool(predictions[i]),
-        "confidence":       round(float(probabilities[i]), 4),
+        "date":             row["date"],
+        "good_for_running": pred.label == "good",
+        "confidence":       round(pred.probability, 4),
         "llm_summary":      None,
     }
-    for i in range(len(to_classify))
+    for row, pred in zip(to_classify, predictions)
 ]
 
 # --- LLM Transform ---
@@ -304,4 +296,4 @@ for row in sample.data:
 
 The double-transform is now complete. `weather_raw` holds the original API data, unchanged. `weather_enriched` holds one row per day with three fields added by the pipeline: a binary ML prediction, a confidence score, and a one-sentence LLM recommendation. The two tables together capture both the raw source and the fully enriched output, independently queryable and clearly separated.
 
-In Week 11, you will take these two steps — the Week 9 Extract + Load and this week's double transform — and wire them together into a single Prefect flow with retries, structured logging, and production-ready error handling.
+In the next lesson, you will wrap this double-transform script into a Prefect *flow* — your first look at the orchestration tool that runs and monitors pipelines. Then in Week 11, you will combine it with the Week 9 Extract + Load into a single production pipeline with retries, structured logging, and idempotent writes.

@@ -55,7 +55,7 @@ What is a managed data platform like Databricks or Snowflake, and how does it di
 
 ### Cloud Concepts Question 5
 
-The lesson a situation where the cloud is probably not the right choice. What is that situation?
+The lesson describes a situation where the cloud is probably not the right choice. What is that situation?
 
 ---
 
@@ -121,7 +121,9 @@ You'll need both of these in Week 9. Keep the tab open for now.
 
 ### Step 3: Create a .env File
 
-In a local project folder (or wherever you plan to keep your Week 9 code), create a file called `.env`:
+In a local project folder (or wherever you plan to keep your Week 9 code), create a file called `.env`.
+
+Example — replace the placeholders with your own Project URL and anon key:
 
 ```
 SUPABASE_URL=https://<your-project-id>.supabase.co
@@ -132,7 +134,7 @@ Immediately add `.env` to your `.gitignore` so it is never committed. API keys c
 
 ### Step 4: Create the Tables
 
-In your Supabase project dashboard, click the **SQL Editor** icon (`</>`) in the left sidebar. Run the following SQL to create the two tables you'll use in weeks 9–11:
+In your Supabase project dashboard, click the **SQL Editor** icon (`</>`) in the left sidebar. Run the following SQL to create the two tables you'll use in weeks 9–11. Use exactly as written — Weeks 9–11 depend on these table and column names:
 
 ```sql
 CREATE TABLE weather_raw (
@@ -153,7 +155,7 @@ CREATE TABLE weather_enriched (
 );
 ```
 
-Then run this to disable Row Level Security on both tables:
+Then run this to disable Row Level Security on both tables. Use exactly as written:
 
 ```sql
 ALTER TABLE weather_raw     DISABLE ROW LEVEL SECURITY;
@@ -183,7 +185,7 @@ Before recording your video, build estimates for the two scenarios below, then f
 In `project_08.md`, write a short summary (a few sentences to a paragraph) covering:
 
 - What each scenario costs, and whether the numbers surprised you.
-- Anything interesting you found while exploring the calculator beyond the two required scenarios.
+- (Optional) Anything interesting you found while exploring the calculator beyond the two required scenarios — include this only if you chose to explore further.
 - A sentence on how the two scenarios compare — what does the cost difference tell you about when a GPU instance is or isn't worth it?
 
 ---
@@ -198,3 +200,28 @@ Show the following:
 
 1. **Supabase dashboard** — your project overview, both tables visible in the Table Editor, and the API settings page with your Project URL and anon key visible.
 2. **AWS Pricing Calculator** — your completed estimates for both scenarios. Briefly walk through what each scenario costs and mention anything that surprised you.
+
+---
+
+<details>
+<summary>Rubric (for AirHub reviewer and mentors)</summary>
+
+**General grading notes:**
+
+- This assignment is largely short written answers plus a video and a Supabase / AWS Pricing Calculator exploration. The specific numbers, cities, regions, cost estimates, and example stacks a student produces will vary. Do **not** fail a student for differing from any reference answer, from another student, or from your own expectation.
+- The reviewer cannot verify the video, the student's Supabase dashboard, or their filesystem. Grade the written deliverables in `warmup_08.md` and `project_08.md`. Do **not** fail on unverifiable external artifacts — a missing-looking video link, dashboard state, the `.env` file, or the `assignments_08/` folder and file names are conventions, not pass/fail conditions.
+- Exact-vs-example: the SQL `CREATE TABLE` / `ALTER TABLE` blocks in Part A are `Use exactly as written` — Weeks 9–11 depend on the `weather_raw` / `weather_enriched` table and column names. The `.env` contents and the cost scenarios/values are `Example — adapt to your own values`; grade the reasoning, not the exact figures.
+
+### Required Deliverables/Tasks
+
+- **Warmup Part 1 — Cloud Concepts (Q1–Q5)** — short written answers in `warmup_08.md`, in the student's own words. Q1: the pay-as-you-go / operational-vs-capital model vs owning servers. Q2: vertical vs horizontal scaling, with a concrete example of each, plus a one-sentence call on each of the three scenarios (viral traffic → horizontal; faster GPU/more RAM → vertical; split-able file pipeline → horizontal). Q3: classifies the six items (Gmail, Azure VMs, AWS S3, GitHub Codespaces, Snowflake, Supabase) as IaaS/PaaS/SaaS/BaaS with one sentence of reasoning, then defines IaaS/PaaS/SaaS with an example and what the developer manages for each. Q4: what a managed data platform (Databricks/Snowflake) is and the gain/give-up vs raw AWS/GCP. Q5: names the situation where cloud is not the right choice. Accept reasonable variation in wording and examples; do not require exact category labels to match a key as long as reasoning is sound.
+- **Warmup Part 2 — Cloud Landscape (Q1–Q4)** — short written answers in `warmup_08.md`. Q1: names the three hyperscalers (AWS, Azure/Microsoft, GCP/Google) with a strength and likely user for each. Q2: summarizes the three reasons the course moved from Azure to Supabase, one sentence each, plus a short personal reflection. Q3: for the four scenarios, names a service category and one concrete provider/product each. Q4: describes a small data project of the student's own design and sketches a stack using services from at least two providers, then discusses consolidation trade-offs. The reviewer cannot see the lesson; grade whether the answer is coherent and on-topic, not whether it matches specific lesson wording.
+- **Supabase setup confirmation** — in `project_08.md`, a sentence confirming the `python200` project is set up (or noting issues). `Example — adapt to your own values` for the region, project details, URL, and keys. Do not fail on the dashboard being unverifiable.
+- **Cloud cost analysis write-up** — in `project_08.md`, a short summary covering what each scenario (A: `t3.micro`, ~160 hrs/month; B: `p3.2xlarge` 24/7 + RDS `db.m5.large` + 1 TB S3 Standard) costs, whether the numbers surprised them, and a sentence comparing the two on when a GPU instance is/isn't worth it. `Example — adapt to your own values`: dollar figures vary with the calculator and must not be failed for differing from a reference.
+- **Video link** — a link to a short (target 3 min, hard max 5) narrated video posted somewhere accessible, pasted in `project_08.md`, showing the Supabase dashboard/tables/API settings and the two completed AWS calculator estimates. The reviewer cannot open or verify the video; grade only that a link is present, and do not fail for length or content that cannot be inspected.
+
+### Optional Deliverables/Tasks
+
+- **Exploring the AWS Pricing Calculator beyond the two required scenarios** — the assignment invites the student to "feel free to explore further" and "throw in whatever looks interesting," and the corresponding write-up bullet is marked (Optional). Do **not** fail a student who only completed Scenarios A and B and did not report additional exploration.
+
+</details>

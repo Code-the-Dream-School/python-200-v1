@@ -12,12 +12,13 @@ In your `python200-homework` repository, create a folder called `assignments_11/
 
 1. `warmup_11.py` — warmup exercises (conceptual answers as comments, code as requested)
 2. `etl_pipeline.py` — the complete ETL pipeline
-3. `models/` — copy your `weather_classifier.pkl` and `weather_classifier_metadata.json` from Week 4 here
-4. `outputs/pipeline_run.md` — a short written reflection on your run
+3. `weather_model/` — copy your `WeatherClassifier` component package from Week 4 here
+4. `models/` — copy your `weather_classifier.pkl` from Week 4 here
+5. `outputs/pipeline_run.md` — a short written reflection on your run
 
 When finished, commit and open a PR as described in the [assignments README](README.md).
 
-**Prerequisites:** Your Week 9 project must have run and populated `weather_raw` before running this pipeline. Your Week 4 model files must be present in `models/`.
+**Prerequisites:** Your Week 9 project must have run and populated `weather_raw` before running this pipeline. Your Week 4 `weather_model/` package and `models/weather_classifier.pkl` must be present.
 
 ```bash
 uv pip install prefect requests openai python-dotenv supabase joblib scikit-learn pandas
@@ -88,9 +89,7 @@ Build `etl_pipeline.py`: a complete Prefect flow with four tasks that orchestrat
 
 - `@task`
 - Performs an incremental check: fetches dates already in `weather_enriched` and skips them
-- Loads the saved sklearn Pipeline from `models/weather_classifier.pkl`
-- Loads feature names from `models/weather_classifier_metadata.json`
-- Runs `predict` and `predict_proba` on the unprocessed records
+- Uses the `WeatherClassifier` component (loaded from `models/weather_classifier.pkl`) to classify the unprocessed records, reading each `Prediction`'s `label` and `probability`
 - Calls the OpenAI API to generate a one-sentence recommendation for each record
 - Handles LLM errors gracefully with a fallback string
 - Prints progress every 50 records
@@ -138,3 +137,44 @@ Paste the video link in a comment at the top of `etl_pipeline.py`.
 ---
 
 Congratulations! With this step, you have finished Python for Cloud & AI. You built a full cloud ETL pipeline from scratch — extract, transform with an ML model and an LLM, load to a cloud database, orchestrated and observable with Prefect. That is a genuinely production-relevant workflow.
+
+---
+
+<details>
+<summary>Rubric (for AirHub reviewer and mentors)</summary>
+
+### Required Deliverables/Tasks
+
+**General grading notes:**
+
+- **This is a capstone written to a specification, not a reference implementation.** The assignment says to write the pipeline from scratch, so implementations vary widely. Grade whether each task meets its stated requirements, not whether the code matches any particular solution.
+- **Student-chosen values and generated text vary.** The city, the specific rows, and every LLM `llm_summary` differ between students and runs. Do not fail a student for text or numbers that differ from a reference. `weather_raw` should have roughly 365 rows for a full year.
+- **External artifacts and copied files cannot be inspected.** The reviewer cannot see the student's Supabase project, the Prefect UI, the video, or their filesystem, and cannot confirm that `weather_model/` and `models/weather_classifier.pkl` were copied in. Grade the submitted code and the written reflection; do not fail a student for an unverifiable dashboard, UI, video, or file.
+- **Names and Prefect parameters are exact.** `Use exactly as written`: the tables `weather_raw`/`weather_enriched` and their columns; the four task names `extract`, `load_raw`, `transform`, `load_enriched`; the retry parameters given per task (e.g. `retries=2, retry_delay_seconds=10`); `on_conflict="date"`; `get_run_logger`; the `WeatherClassifier` component and its `Prediction` `label`/`probability`; and the model id `gpt-4o-mini`. `Example — adapt to your own values`: the chosen city and the exact prompt wording.
+
+**Part 1 — `warmup_11.py`:**
+
+- **Prefect Q1** — a comment distinguishing `@task` from `@flow`, and a reasoned answer on whether to decorate a pure in-memory C→F helper (no — it does no I/O and gains nothing from task tracking).
+- **Prefect Q2** — the single decorator line for a `call_api` task with 3 retries and a 30-second delay.
+- **Prefect Q3** — a comment on where in the Prefect UI to investigate the failed `transform` task and what information to expect (the task's logs and traceback).
+- **Production Q1** — a comment explaining `raise_for_status()` versus a manual status-code check, and what happens to downstream tasks on a 500 in each case.
+- **Production Q2** — a comment explaining what `upsert` with `on_conflict="date"` protects against on a crash-and-rerun, and what plain `insert` would do instead.
+- **Production Q3** — a task stub (decorator, signature accepting `enrichment_records`, and one `get_run_logger()` INFO line reporting the upserted count).
+- **Production Q4** — a comment on how the incremental check contributes to idempotency and the cost/time/correctness consequences of reprocessing all records.
+
+**Part 2 — `etl_pipeline.py`:**
+
+- **`extract` task** — `@task(retries=2, retry_delay_seconds=10)`; fetches full-year 2023 daily weather (the four variables) for the chosen city; uses `raise_for_status()`; converts the columnar response to row dictionaries; prints the record count; returns the list.
+- **`load_raw` task** — `@task(retries=2, retry_delay_seconds=5)`; upserts into `weather_raw` with `on_conflict="date"`; prints the upserted count.
+- **`transform` task** — `@task`; incremental check that skips dates already in `weather_enriched`; classifies the unprocessed records with the `WeatherClassifier` component (label + confidence); calls the OpenAI API for a one-sentence recommendation per record with graceful fallback on error; prints progress every 50 records; returns the enrichment records.
+- **`load_enriched` task** — `@task(retries=2, retry_delay_seconds=5)`; guards against an empty list (returns early); upserts into `weather_enriched` with `on_conflict="date"`; prints the upserted count.
+- **Flow** — `@flow(log_prints=True)` calling all four tasks in order and printing a final completion message.
+- **Running and verifying** — evidence (in the reflection/video) that the flow ran with all four tasks completed and both tables populated.
+- **Reflection** — `outputs/pipeline_run.md` (5–7 sentences) covering the first-run outcome and any fixes, what the Prefect UI showed and whether any task retried, an assessment of a few `llm_summary` rows, and one change for a daily scheduled deployment.
+- **Video** — a link at the top of `etl_pipeline.py` to a short video showing the pipeline running to completion, the Prefect UI with all four tasks completed and the transform logs, and the `weather_enriched` table with the `llm_summary` column.
+
+### Optional Deliverables/Tasks
+
+**None.**
+
+</details>
