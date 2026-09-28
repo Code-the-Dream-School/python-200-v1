@@ -130,7 +130,7 @@ Paste the video link in a comment at the top of `transform_10.py`.
 - **Student-chosen values and generated text vary.** The city, the specific predictions, and every LLM-generated `llm_summary` differ between students and between runs. Do not fail a student for text or numbers that differ from any reference. A full year is roughly 365 records.
 - **External artifacts and copied files cannot be inspected.** The reviewer cannot see the student's Supabase project, the video, their `.env`, or their filesystem, and cannot confirm that `weather_model/` and `models/weather_classifier.pkl` were copied in. Grade the submitted code and written answers; do not fail a student for an unverifiable file, dashboard, or video.
 - **Names are exact.** `Use exactly as written (they must match Week 9's tables and the Week 4 component)`: the tables `weather_raw` and `weather_enriched` and the columns `date`, `good_for_running`, `confidence`, `llm_summary`; the `WeatherClassifier` component and its `Prediction` result's `label`/`probability`; the model id `gpt-4o-mini`; and the function `call_with_retry`. `Example — adapt to your own values`: the chosen city, the exact prompt wording, and any sample values.
-- - **Video link** — a link to a short narrated video posted somewhere accessible, pasted in project_10.md. The reviewer cannot open or verify the video; grade only that a link is present, and do not fail for length or content that cannot be inspected.
+- - **Video link** — a link to a short narrated video posted somewhere accessible, pasted in transform_10.py. The reviewer cannot open or verify the video; grade only that a link is present, and do not fail for length or content that cannot be inspected.
 
 **Part 1 — `warmup_10.py`:**
 
