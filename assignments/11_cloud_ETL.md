@@ -151,6 +151,7 @@ Congratulations! With this step, you have finished Python for Cloud & AI. You bu
 - **Student-chosen values and generated text vary.** The city, the specific rows, and every LLM `llm_summary` differ between students and runs. Do not fail a student for text or numbers that differ from a reference. `weather_raw` should have roughly 365 rows for a full year.
 - **External artifacts and copied files cannot be inspected.** The reviewer cannot see the student's Supabase project, the Prefect UI, the video, or their filesystem, and cannot confirm that `weather_model/` and `models/weather_classifier.pkl` were copied in. Grade the submitted code and the written reflection; do not fail a student for an unverifiable dashboard, UI, video, or file.
 - **Names and Prefect parameters are exact.** `Use exactly as written`: the tables `weather_raw`/`weather_enriched` and their columns; the four task names `extract`, `load_raw`, `transform`, `load_enriched`; the retry parameters given per task (e.g. `retries=2, retry_delay_seconds=10`); `on_conflict="date"`; `get_run_logger`; the `WeatherClassifier` component and its `Prediction` `label`/`probability`; and the model id `gpt-4o-mini`. `Example — adapt to your own values`: the chosen city and the exact prompt wording.
+- - **Video link** — a link to a short narrated video posted somewhere accessible, pasted in etl_pipeline.py. The reviewer cannot open or verify the video; grade only that a link is present, and do not fail for length or content that cannot be inspected.
 
 **Part 1 — `warmup_11.py`:**
 
