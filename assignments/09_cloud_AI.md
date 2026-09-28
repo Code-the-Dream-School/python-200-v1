@@ -127,6 +127,7 @@ Paste the video link in a comment at the top of `project_09.py`.
 - **External artifacts cannot be inspected.** The reviewer cannot see the student's Supabase project, their `.env`, the video, or their filesystem. Grade the submitted code and written answers; do not fail a student for a Supabase dashboard, a video, or a file path you cannot verify. The requirement to gitignore `.env` is a real security practice, but its presence/absence is not something the reviewer can confirm.
 - **Table and column names are exact.** `Use exactly as written (Weeks 10–11 read these exact names)`: the table `weather_raw` and its columns `temperature_2m_max`, `temperature_2m_min`, `precipitation_sum`, `wind_speed_10m_max`, `date`. These must match the Open-Meteo API field names because later weeks feed these rows to the classifier without renaming.
 - **Function names are exact where the assignment specifies them.** `Use exactly as written`: `get_client`, `insert_test_record`, `get_records_by_date_range`, `safe_upsert`. `Example — adapt to your own values`: the chosen city, latitude/longitude, and sample record values.
+- **Video link** — a link to a short narrated video posted somewhere accessible, pasted in project_09.md. The reviewer cannot open or verify the video; grade only that a link is present, and do not fail for length or content that cannot be inspected.
 
 **Part 1 — `warmup_09.py`:**
 
