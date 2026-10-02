@@ -14,7 +14,7 @@ By the end of this week you will be able to:
 - Write `pytest` tests that check both the success path and the failure path
 - Split a script into importable modules and a package with a test suite
 
-> For an introduction to the course as a whole, and a discussion of how to set up your environment, please see the [Welcome](../README.md) page.
+> For an introduction to the course as a whole, and a discussion of how to set up your environment, please see the [Welcome](https://github.com/Code-the-Dream-School/python-200-v1/blob/98503c8c67b32d060c2a8ec16785d4d80336b210/README.md) page.
 
 ## Topics
 
