@@ -45,7 +45,7 @@ Install this week's two new packages:
 uv pip install pydantic pytest
 ```
 
-When finished, commit and open a PR as described in the [assignments README](README.md).
+When finished, commit and open a PR as described in the [assignments README](https://github.com/Code-the-Dream-School/python-200-v1/blob/0ad9f4a246386d3140aae529f9114c6b44ce5112/assignments/README.md).
 
 **Primary submission**: A link to your open GitHub PR. Your grader will run `pytest` from inside `assignments_01/`, so make sure it passes from there.
 
