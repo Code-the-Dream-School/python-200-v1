@@ -39,14 +39,14 @@ Each week, the process for submitting your assignments is as follows:
 5.  Open a Pull Request into your own `main` branch.
 6.  Submit your assignment through your Learns App lesson page which will redirect you to AirHub AI Review tool for your results.
 7.  Review your feedback after submission.
-   a. Needs revisions?
-      i.   If you understand what feedback told you to revise, make the changes and resubmit.
-      ii.  If you are unsure about what needs to be corrected, schedule to meet with a 1:1 mentor.
-      iii. If you feel the needs revisions feedback is incorrect, flag the feedback which starts our human review process
+   - Needs revisions?
+      - If you understand what feedback told you to revise, make the changes and resubmit.
+      - If you are unsure about what needs to be corrected, schedule to meet with a 1:1 mentor.
+      - If you feel the needs revisions feedback is incorrect, flag the feedback which starts our human review process
            (may take a few days for it to be completed - you can schedule time with a 1:1 mentor if you cannot or do not
            want to wait for the results of the human review process).
-   b. No revisions needed? Proceed to your next lesson
-9. When an assignment is approved (either by AI upon submission or updated to approved after human review process), merge it into `main`.
+   - No revisions needed? Proceed to your next lesson
+8. When an assignment is approved (either by AI upon submission or updated to approved after human review process), merge it into `main`.
 
 > Some weeks you will submit at Kaggle, so be sure to read the instructions for each week carefully.
 
