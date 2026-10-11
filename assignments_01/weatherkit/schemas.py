@@ -19,7 +19,7 @@ class HourlyBlock(BaseModel):
     @model_validator(mode="after")
     def reject_response(self):
         """rejects the response if the three lists are not all the same length."""
-        if len(self.time) != len(self.temperature_2m) != len(self.precipitation):
+        if len(self.time) != len(self.temperature_2m) or len(self.time) != len(self.precipitation):
             raise ValueError("lists in HourlyBlock must have the same length!")
         return self
 

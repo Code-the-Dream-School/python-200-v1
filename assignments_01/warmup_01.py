@@ -8,8 +8,6 @@ class Thermometer:
             self.readings = []
         else:
             self.readings = list(readings)
-            
-        self.readings = readings
         
 
     def add(self, reading):
