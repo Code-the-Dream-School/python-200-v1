@@ -1,0 +1,54 @@
+# Python 200 -- Course Environment
+# Python 3.12
+#
+# Setup:
+#   uv venv --python 3.12
+#   source .venv/Scripts/activate   # Git Bash on Windows
+#   source .venv/bin/activate       # Mac / Linux
+#   uv pip install -r requirements.txt
+#
+# Note: PyTorch, torchvision, and related deep learning packages are NOT here --
+#       deep learning work is done on Kaggle.
+#
+# Version bounds: fast-moving libraries are capped at the major (or 0.x minor)
+# version the lessons were checked against. Stable libraries are left unpinned.
+
+# --- Core data tools (all weeks) ---
+jupyterlab
+ipykernel
+numpy
+pandas>=2.2,<3
+matplotlib
+seaborn
+scipy
+requests
+python-dotenv
+jupytext
+gdown                  # Week 3 PCA demo data download
+
+# --- Pipelines (Weeks 1, 11) ---
+prefect>=3,<4
+
+# --- Machine learning (Weeks 2-4, 10) ---
+scikit-learn>=1.4
+joblib
+
+# --- LLMs and RAG (Weeks 5-6, 10) ---
+openai>=2,<3
+pypdf
+llama-index>=0.14,<0.15
+llama-index-llms-openai
+llama-index-embeddings-openai
+llama-index-readers-file
+
+# Optional Week 6 extension (persistent vector store; also requires Docker)
+llama-index-vector-stores-postgres
+psycopg2-binary
+pgvector
+
+# --- AI Agents (Week 7) ---
+smolagents>=1.26,<2
+pytest                 # Week 7 GitHub Copilot exercise (mini-etl tests)
+
+# --- Cloud data (Weeks 9-11) ---
+supabase>=2,<3
