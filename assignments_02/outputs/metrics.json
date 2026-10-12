@@ -1,0 +1,24 @@
+{
+  "city": "Raleigh, NC",
+  "year": 2023,
+  "rows": 365,
+  "dropped": 0,
+  "train_rows": 292,
+  "test_rows": 73,
+  "baseline": {
+    "train_r2": 0.8370558724341968,
+    "test_r2": 0.8522893247978045,
+    "rmse": 3.2295934781410343
+  },
+  "full": {
+    "train_r2": 0.863922051022573,
+    "test_r2": 0.8874639104091019,
+    "rmse": 2.8189529532982953
+  },
+  "coefficients": {
+    "temperature_2m_min": 0.9111096761317672,
+    "precipitation_sum": -0.14566289178655795,
+    "wind_speed_10m_max": -0.06884328684565143,
+    "is_summer": 1.132303059419549
+  }
+}
