@@ -52,3 +52,8 @@ pytest                 # Week 7 GitHub Copilot exercise (mini-etl tests)
 
 # --- Cloud data (Weeks 9-11) ---
 supabase>=2,<3
+
+# --- Optional Practicum AWS Bridge (Weeks 9-11) ---
+# boto3 is the AWS SDK for Python. moto runs a fake AWS locally, so no AWS account is needed.
+boto3
+moto[ssm]>=5,<6
