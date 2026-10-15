@@ -1,0 +1,18 @@
+{
+  "version": "2.0",
+  "rawPath": "/",
+  "requestContext": {
+    "http": {
+      "method": "POST",
+      "path": "/",
+      "sourceIp": "203.0.113.10"
+    },
+    "requestId": "c6af9ac6-7b61-11e6-9a41-93e8deadbeef",
+    "timeEpoch": 1791936000000
+  },
+  "headers": {
+    "content-type": "application/json"
+  },
+  "body": "{\"week\": 5}",
+  "isBase64Encoded": false
+}

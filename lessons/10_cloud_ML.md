@@ -18,6 +18,9 @@ The hands-on LLM step. Designs a constrained prompt that receives each day's wea
 4. [Orchestrating with Prefect](https://github.com/Code-the-Dream-School/python-200-v1/blob/main/lessons/10_llm_pipelines/04_orchestration.md)
 Introduces Prefect, the tool that turns the linear double-transform script into a tracked *flow*. You wrap each step into an `@task` and combine them in a `@flow`. This is the light version — retries, logging, scheduling, and the Prefect UI come in Week 11, which builds directly on this lesson.
 
+5. (Optional) [Practicum AWS Bridge, Part 3: The Lambda Handler](https://github.com/Code-the-Dream-School/python-200-v1/blob/main/lessons/10_llm_pipelines/05_aws_bridge_handler.md)
+The third of four optional lessons that prepare you for the AWS work in the practicum. It explains what a Lambda handler is, compares the events that EventBridge Scheduler and a Lambda Function URL send, and shows how a function's log lines reach CloudWatch Logs. This lesson is a pilot this term, and you can skip it without any effect on your grade.
+
 ## Week 10 Assignments
 
 Once you finish the lessons, scroll down to the coding assignment below to get more hands-on practice with the material.

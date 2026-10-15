@@ -8,9 +8,9 @@ When we want an LLM to behave more like a truth-tracking assistant rather than a
 In this quick overview, we'll discuss each method, and then in the rest of the hands-on lessons for this week, we will do a much deeper dive into RAG. 
 
 ## Prompt engineering
-The simplest way to give a model new information, [which we discussed last week](../05_AI_intro/prompt_engineering.md), is *prompt engineering*. In this context, it is sometimes called *prompt injection*. 
+The simplest way to give a model new information, [which we discussed last week](../05_AI_intro/prompt_engineering.md), is *prompt engineering*. In this context, it is sometimes called *context injection*. Do not confuse it with *prompt injection*, which is a type of security attack where someone hides instructions in the text that a model reads. 
 
-Here, you attach the required information or facts directly into the prompt: you simply tell the model what it needs to know before asking it your question. This is sometimes called "stuffing" or "in-context learning." If the information is short, stable, and changes often, this can be surprisingly effective. It is also simple and works very quickly. 
+Here, you attach the required information or facts directly into the prompt: you simply tell the model what it needs to know before asking it your question. This is sometimes called "stuffing" or "in-context learning." If the information is short, this can be surprisingly effective. It also works well for information that changes often, because you can put the newest version in the prompt each time. It is also simple and works very quickly. 
 
 The downside is that prompts can become long and unwieldy, and the model can forget or ignore parts of them as the conversation grows. Also, these prompts consume tokens which can become costly: if you want to paste huge document stores into the prompt, then it is not cost effective. 
 

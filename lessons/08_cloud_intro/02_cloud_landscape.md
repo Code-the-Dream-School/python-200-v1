@@ -36,7 +36,7 @@ Backend-as-a-service platforms sit at a higher abstraction layer than any of the
 
 **Supabase** is the open-source Firebase alternative built on PostgreSQL. Where Firebase gives you a document store, Supabase gives you a real relational database with SQL, indexes, foreign keys, and joins — plus an automatically generated REST API on top, authentication, and file storage. Because it's Postgres under the hood, anything you learn working with Supabase transfers directly to raw database work.
 
-Supabase is what we'll use for the hands-on portion of this course, starting in Week 9.
+Supabase is what we'll use for the hands-on portion of this course. You will set up your Supabase project in this week's assignment and start writing code against it in Week 9.
 
 ## Why Supabase for This Course
 
@@ -68,7 +68,7 @@ Most projects don't use one provider for everything. A common pattern: GCP BigQu
 
 ### A Preview of the Practicum's AWS Stack
 
-The hands-on work in *this* course uses Supabase, and you do not need an AWS account for anything here. The practicum that follows this course, however, deploys a pipeline on AWS using a small set of serverless services. It is worth knowing what each one does before you get there, so the names are familiar rather than new. You will not set any of these up in this course -- this is orientation, not a task.
+The hands-on work in *this* course uses Supabase, and you do not need an AWS account for anything here. The practicum that follows this course, however, deploys a pipeline on AWS using a small set of serverless services. It is worth knowing what each one does before you get there, so the names are familiar rather than new. You will not need an AWS account in this course. If you want hands-on practice, the optional Practicum AWS Bridge lessons in Weeks 8 to 11 let you practice IAM, Parameter Store, Lambda, and CloudWatch on your own computer.
 
 - **Lambda** runs your code without a server you manage. You hand AWS a function, and it runs on demand and bills only for the time the function is actually executing. This is the serverless compute from the taxonomy table above, and it is where the practicum runs its pipeline code.
 - **EventBridge** triggers a Lambda on a schedule, for example "run this every morning at 6 a.m." It is what turns a function into a pipeline that runs on its own.
@@ -88,4 +88,4 @@ Weeks 9–11 are hands-on with Supabase. By the end of week 11, you'll have a co
 - Writes the enriched output to a `weather_enriched` table
 - Orchestrates all of this as a Prefect flow with retries, logging, and idempotent writes
 
-In Week 9, you'll create your Supabase project, set up the two tables, and write your first load script. All of the setup is self-contained — no invitations, no tenant configuration, no waiting.
+In this week's assignment, you'll create your Supabase project and set up the two tables. In Week 9, you'll write your first load script. All of the setup is self-contained — no invitations, no tenant configuration, no waiting.

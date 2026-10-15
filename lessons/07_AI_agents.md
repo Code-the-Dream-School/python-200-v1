@@ -11,14 +11,14 @@ What is an agent, and how does it differ from a simple LLM call? We introduce th
 2. [Hello, agent](https://github.com/Code-the-Dream-School/python-200/blob/main/lessons/07_AI_agents/02_minimal_agent.md)  
 The "Hello world" of agents -- we build and call a simple tool from scratch to see the basic mechanics before adding complexity.
 
-3. [Building a simple ETL Agent](https://github.com/Code-the-Dream-School/python-200/blob/main/lessons/07_AI_agents/03_analysis_agent.md)  
-A more realistic application: we build an agent that can extract, transform, and load data using the ReAct framework, defining tools for each step and letting the agent orchestrate them based on user input.
+3. [Building a Data Analysis Agent](https://github.com/Code-the-Dream-School/python-200/blob/main/lessons/07_AI_agents/03_analysis_agent.md)  
+A more realistic application: we build an agent that reads and analyzes a CSV file of bike commute data. We define several tools, such as loading the file, summarizing columns, and plotting data. The agent uses the ReAct loop to decide which tools to call based on the user's question.
 
 4. [Smolagents](https://github.com/Code-the-Dream-School/python-200/blob/main/lessons/07_AI_agents/04_smolagents.md)  
 An introduction to smolagents, HuggingFace's lightweight framework for building agents. We cover tool definition, running agents, and the difference between tool-based and code-based agents in a production-ready context.
 
 5. [Demo: AI Paired Programmer](https://github.com/Code-the-Dream-School/python-200/blob/main/lessons/07_AI_agents/05_github_copilot.md)    
-A demonstration of AI code assistant agents in practice -- using one to evaluate a project, fix failing tests, and generate documentation. We also discuss the strengths and limitations of code agents, and how tools like GitHub Copilot and Claude Code compare.
+A demonstration of an AI code assistant agent in practice. We use GitHub Copilot in agent mode to fix the failing tests in a small ETL project and then to write a demo Jupyter notebook for it. We also discuss the strengths and limitations of code agents, and why you must review the code they write.
 
 ## Week 7 Assignments
 Once you finish the lessons, head on over to the [assignments](../../assignments/README.md) to get more hands-on practice with the material.

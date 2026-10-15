@@ -14,6 +14,8 @@ In your `python200-homework` repository, create a folder called `assignments_08/
 1. `warmup_08.md` — for the warmup questions
 2. `project_08.md` — for the Supabase setup notes and cost analysis write-up, plus your video link
 
+If you choose to do the optional Practicum AWS Bridge in Part 4, also create an `aws_bridge/` folder inside `assignments_08/`. Part 4 lists the files that go in it.
+
 When finished, commit and open a PR as described in the [assignments README](README.md).
 
 # Part 1: Warmup — Cloud Concepts
@@ -198,8 +200,84 @@ Post your video somewhere accessible (whatever you used in Python 100) and paste
 
 Show the following:
 
-1. **Supabase dashboard** — your project overview, both tables visible in the Table Editor, and the API settings page with your Project URL and anon key visible.
+1. **Supabase dashboard** — your project overview, both tables visible in the Table Editor, and the API settings page with your Project URL visible. Do not show your anon key in the video. Hide or blur it before you record, or scroll so that it is not on screen. Anyone who watches the video could copy a visible key.
 2. **AWS Pricing Calculator** — your completed estimates for both scenarios. Briefly walk through what each scenario costs and mention anything that surprised you.
+
+---
+
+# Part 4: (Optional) Practicum AWS Bridge — IAM Policy Checker
+
+> **This entire part is optional.** The Practicum AWS Bridge is a pilot this term. You can skip all of Part 4 without any effect on your grade.
+
+This part goes with the optional lesson [Practicum AWS Bridge, Part 1: IAM Permissions](../lessons/08_cloud_intro/03_aws_bridge_iam.md). The bridge is a four-week mini-project that is separate from the weather pipeline. Each week adds one piece to an automatic alert that tells the Code the Dream teaching team when fewer than 80% of students submit their weekly assignment. This week, you write a Python checker that reads the alert's IAM policy and decides whether the policy allows a request.
+
+You do not need an AWS account, and you do not need to install anything new. You will use the `json` and `fnmatch` modules from the standard library, and `pytest`, which you used in Week 1.
+
+Plan for about two hours, in addition to the optional lesson.
+
+## Task 1: (Optional) Set Up the Folder
+
+Create a folder called `aws_bridge/` inside `assignments_08/`. Copy the file `submission_alert_policy.json` into it. You can find this file in the course repository at `assignments/resources/aws_bridge/submission_alert_policy.json`.
+
+You will keep adding to this folder in Weeks 9, 10, and 11.
+
+## Task 2: (Optional) Read the Policy
+
+Open `submission_alert_policy.json` and read its four statements. Then create `aws_bridge/policy_notes.md` and answer these questions in your own words:
+
+1. For each of the four statements, write one sentence that says what the statement allows or denies, and on which resources. Use the statement's `Sid` as a label.
+2. The `PublishSubmissionMetric` statement uses `"Resource": "*"`. Why does it use `*`, and why does this statement still follow the principle of least privilege?
+3. A teammate suggests replacing the `ReadAlertSettings` and `BlockAdminSettings` statements with one simpler statement: `{"Effect": "Allow", "Action": "ssm:*", "Resource": "*"}`. The alert would still be able to read its settings. In two or three sentences, explain what risk this change adds.
+
+## Task 3: (Optional) Write the Policy Checker
+
+Create `aws_bridge/iam_checker.py`. Write the four functions below.
+
+Use exactly as written: the file name `iam_checker.py`, the four function names, their parameters, and the three result strings `"allowed"`, `"explicit deny"`, and `"implicit deny"`. The Week 11 part of the bridge imports these functions by name.
+
+1. **`load_policy(path)`** reads a JSON policy file and returns it as a dictionary.
+
+2. **`statement_matches(statement, action, resource)`** returns `True` if one statement applies to the request, and `False` otherwise. A statement applies when **both** of these are true:
+    - At least one pattern in the statement's `"Action"` matches `action`. Compare actions **without** regard to case, so `SSM:getparameter` matches `ssm:GetParameter`.
+    - At least one pattern in the statement's `"Resource"` matches `resource`. Compare resources **with** regard to case.
+
+    In both fields, `*` matches any sequence of characters and `?` matches exactly one character. Each field can be either a single string or a list of strings, and your function needs to handle both.
+
+3. **`evaluate(policy, action, resource)`** returns one of three strings, using these rules in this order:
+    - If any statement that applies has `"Effect": "Deny"`, return `"explicit deny"`.
+    - Otherwise, if any statement that applies has `"Effect": "Allow"`, return `"allowed"`.
+    - Otherwise, return `"implicit deny"`.
+
+    The order of the statements in the policy does not change the result.
+
+4. **`is_allowed(policy, action, resource)`** returns `True` if `evaluate` returns `"allowed"`, and `False` in every other case.
+
+You do not need to support any other parts of IAM, such as `Condition`, `NotAction`, or `Principal`.
+
+## Task 4: (Optional) Test the Checker
+
+Create `aws_bridge/test_iam_checker.py` and write pytest tests for your checker.
+
+Your tests should check at least the six requests in the table below against `submission_alert_policy.json`. Each request uses the account ID `123456789012` and the region `us-east-1`. Use `@pytest.mark.parametrize` so that one test function checks all six rows.
+
+| Action | Resource | Expected result from `evaluate` |
+|---|---|---|
+| `ssm:GetParameter` | `arn:aws:ssm:us-east-1:123456789012:parameter/ctd/submission-alert/threshold` | `"allowed"` |
+| `SSM:getparameter` | `arn:aws:ssm:us-east-1:123456789012:parameter/ctd/submission-alert/threshold` | `"allowed"` |
+| `ssm:GetParameter` | `arn:aws:ssm:us-east-1:123456789012:parameter/ctd/submission-alert/admin/override` | `"explicit deny"` |
+| `ssm:PutParameter` | `arn:aws:ssm:us-east-1:123456789012:parameter/ctd/submission-alert/threshold` | `"implicit deny"` |
+| `cloudwatch:PutMetricData` | `*` | `"allowed"` |
+| `s3:GetObject` | `arn:aws:s3:::ctd-gradebook/week07.csv` | `"implicit deny"` |
+
+Then add **at least two tests of your own**. Choose cases that the table does not cover. Here are some ideas:
+
+- A statement whose `"Action"` is a single string instead of a list
+- A wildcard action, such as `s3:Get*`
+- A resource ARN that differs from an allowed ARN only in uppercase and lowercase letters
+
+**Tip:** Your tests need to find the policy file no matter which folder you run `pytest` from. One way to do this is `Path(__file__).parent / "submission_alert_policy.json"`, which builds the path relative to the test file.
+
+Run `pytest` and confirm that every test passes.
 
 ---
 
@@ -210,6 +288,7 @@ Show the following:
 
 - This assignment is largely short written answers plus a video and a Supabase / AWS Pricing Calculator exploration. The specific numbers, cities, regions, cost estimates, and example stacks a student produces will vary. Do **not** fail a student for differing from any reference answer, from another student, or from your own expectation.
 - The reviewer cannot verify the video, the student's Supabase dashboard, or their filesystem. Grade the written deliverables in `warmup_08.md` and `project_08.md`. Do **not** fail on unverifiable external artifacts — a missing-looking video link, dashboard state, the `.env` file, or the `assignments_08/` folder and file names are conventions, not pass/fail conditions.
+- **Part 4 (Practicum AWS Bridge) is entirely optional.** It is a pilot this term. All of its tasks are listed under Optional Deliverables/Tasks below. Never fail a student for skipping it.
 - Exact-vs-example: the SQL `CREATE TABLE` / `ALTER TABLE` blocks in Part A are `Use exactly as written` — Weeks 9–11 depend on the `weather_raw` / `weather_enriched` table and column names. The `.env` contents and the cost scenarios/values are `Example — adapt to your own values`; grade the reasoning, not the exact figures.
 
 ### Required Deliverables/Tasks
@@ -223,5 +302,10 @@ Show the following:
 ### Optional Deliverables/Tasks
 
 - **Exploring the AWS Pricing Calculator beyond the two required scenarios** — the assignment invites the student to "feel free to explore further" and "throw in whatever looks interesting," and the corresponding write-up bullet is marked (Optional). Do **not** fail a student who only completed Scenarios A and B and did not report additional exploration.
+- **Part 4 — (Optional) Practicum AWS Bridge: IAM Policy Checker.** This entire part is an optional pilot. Do **not** fail or ask for revisions from a student who skipped any or all of Part 4, and do not count a missing `aws_bridge/` folder against them. If the student attempted Part 4, give feedback on what they submitted, using the notes below. A partial attempt is acceptable.
+    - **Task 1 (setup)** — an `aws_bridge/` folder containing a copy of `submission_alert_policy.json`. `Example — adapt to your own layout`: the location the student copied the file from, and where the folder sits, are not pass/fail conditions.
+    - **Task 2 (`policy_notes.md`)** — (1) one sentence per statement (`ReadAlertSettings`, `BlockAdminSettings`, `PublishSubmissionMetric`, `WriteOwnLogs`) saying what it allows or denies and on which resources; (2) an explanation that `cloudwatch:PutMetricData` does not support resource ARNs, so it must use `"Resource": "*"`, and that the statement still follows least privilege because it allows only that one action; (3) the risk of replacing the two Parameter Store statements with `ssm:*` on `*`: the alert could then change or delete *any* Parameter Store setting in the account, including the `admin/` settings that the current policy denies, so a bug or misuse could do much more damage. Accept any reasonable wording.
+    - **Task 3 (`iam_checker.py`)** — the functions `load_policy(path)`, `statement_matches(statement, action, resource)`, `evaluate(policy, action, resource)`, and `is_allowed(policy, action, resource)`. `Use exactly as written (later tasks depend on these names)`: the file name, the four function names and their parameters, and the result strings `"allowed"`, `"explicit deny"`, and `"implicit deny"`. Behavior to check: actions match case-insensitively and resources case-sensitively; `*` and `?` wildcards work in both fields; `Action` and `Resource` accept a string or a list; a matching Deny always wins over a matching Allow, regardless of statement order; a request that no statement matches returns `"implicit deny"`. The implementation approach is the student's choice (for example, `fnmatch.fnmatchcase`, `re`, or hand-written matching).
+    - **Task 4 (`test_iam_checker.py`)** — pytest tests that cover the six rows of the table in the assignment, using `@pytest.mark.parametrize`, plus at least two additional cases of the student's choosing. `Example — adapt to your own layout`: how the test locates the policy file (the `Path(__file__)` tip is a suggestion, not a requirement).
 
 </details>

@@ -39,7 +39,7 @@ Before writing any code, it helps to understand what LlamaIndex is doing on your
 
 > **Note:** Install the following packages before running the code in this lesson:
 > ```bash
-> pip install "llama-index-core==0.14.10" llama-index-embeddings-openai pypdf python-dotenv
+> pip install "llama-index-core==0.14.10" llama-index-embeddings-openai llama-index-llms-openai llama-index-readers-file pypdf python-dotenv
 > ```
 > The optional pgvector extension at the end of this lesson requires two additional packages (`llama-index-vector-stores-postgres` and `psycopg2-binary`) and Docker. You do not need them for the main lesson.
 
@@ -71,10 +71,14 @@ This replaces almost everything we built manually in Step 2 with a framework-foc
 
 ### Read, Chunk, and Store Documents
 
-LlamaIndex provides a default storage index called `VectorStoreIndex` to store the chunked and embedded text from the documents. The following code shows how to create the vector store index for the brightleaf documents.
+LlamaIndex provides a default storage index called `VectorStoreIndex` to store the chunked and embedded text from the documents. The following code shows how to create the vector store index for the brightleaf documents. The code first sets the embedding model to `text-embedding-3-small`, which is the model this course uses. If you do not set it, LlamaIndex uses its own default model, `text-embedding-ada-002`.
 
 ```python
-from llama_index.core import SimpleDirectoryReader, VectorStoreIndex
+from llama_index.core import SimpleDirectoryReader, VectorStoreIndex, Settings
+from llama_index.embeddings.openai import OpenAIEmbedding
+
+# Use the same embedding model as the rest of the course
+Settings.embed_model = OpenAIEmbedding(model="text-embedding-3-small")
 
 # Load documents directly from PDFs in the folder
 docs = SimpleDirectoryReader("brightleaf_pdfs").load_data()
@@ -85,7 +89,7 @@ index = VectorStoreIndex.from_documents(docs)
 
 > **Note**: Make sure the `brightleaf_pdfs` directory is in the appropriate location, you can additionally add an `assert` statement to check the existence of the directory if it is located elsewhere.
 
-These two lines of code capture the document reading, chunking, embedding, and storing steps. LlamaIndex uses the inbuilt `SimpleDirectoryReader` method to read the documents and store the metadata and text into the `docs` list (the "Read" block in the figure at the start of the lesson).  
+The last two lines of code capture the document reading, chunking, embedding, and storing steps. LlamaIndex uses the inbuilt `SimpleDirectoryReader` method to read the documents and store the metadata and text into the `docs` list (the "Read" block in the figure at the start of the lesson).  
 
 <!-- Document: LlamaIndex’s core data structure that represents one source file (like a PDF) after it’s loaded.
 id_: A unique identifier automatically assigned to each document.
@@ -240,11 +244,17 @@ LlamaIndex includes built-in tools for evaluating how well a RAG system is perfo
 > ```bash
 > pip install llama-index-vector-stores-postgres psycopg2-binary
 > ```
-> If you do not have Docker, skip this section — the main lesson (in-memory RAG + evaluation) is complete. The assignment's Extension D covers this same material.
+> **You set up the database container yourself.** This lesson does not include setup instructions for Docker or for the PostgreSQL + pgvector container. You need a running PostgreSQL server with the pgvector extension, reachable at `localhost:5432`. These resources explain how to set one up:
+> - [Docker: Get started](https://docs.docker.com/get-started/) explains how to install Docker and run a container.
+> - The [pgvector README](https://github.com/pgvector/pgvector#docker) and the [`pgvector/pgvector` image on Docker Hub](https://hub.docker.com/r/pgvector/pgvector) explain how to run PostgreSQL with pgvector in Docker.
+>
+> When you start the container, choose a database name, user, and password. Then put the same values in the connection settings below.
+>
+> If you do not have Docker, skip this section. The main lesson (in-memory RAG and evaluation) is complete without it. The assignment's Extension C covers this same material.
 
 The in-memory `SimpleVectorStore` used above disappears when your script stops — every restart requires re-embedding all documents from scratch. A persistent database solves this: embeddings are stored once and reused across sessions. This section walks through replacing `SimpleVectorStore` with a PostgreSQL database backed by pgvector, using the same LlamaIndex interface you already know.
 
-LlamaIndex provides support to work with persistent databases using pgvector and PostgreSQL through the `llama-index-vector-stores-postgres` package. LlamaIndex manages its own table — it does not share the `rag_chunks` table from any prior setup. Before starting, make sure your Postgres + pgvector Docker container is running and reachable at `localhost:5432`.
+LlamaIndex provides support to work with persistent databases using pgvector and PostgreSQL through the `llama-index-vector-stores-postgres` package. LlamaIndex creates and manages its own table in the database. Before starting, make sure your Postgres + pgvector Docker container is running and reachable at `localhost:5432`.
 
 <!-- This notebook is the "framework sequel" to the earlier RAG notebooks:
 
@@ -281,7 +291,7 @@ We first define some variables associated with the docker container, table name,
 
 ```python
 # Connection + indexing configuration
-# Update these to match your Docker pgvector setup from the previous notebook.
+# Update these to match your own PostgreSQL + pgvector container.
 
 PG_HOST = "localhost"
 PG_PORT = 5432
@@ -289,7 +299,8 @@ PG_DATABASE = "ctd_rag"
 PG_USER = "ctd"
 PG_PASSWORD = "ctdpassword"
 
-# LlamaIndex will manage THIS table (separate from your hand-rolled rag_chunks table).
+# LlamaIndex will manage this table.
+# PGVectorStore adds the prefix "data_", so the table in Postgres is named "data_li_brightleaf_pgvector".
 LI_TABLE_NAME = "li_brightleaf_pgvector"
 
 # Embedding model choice must match embed_dim.
@@ -354,7 +365,7 @@ Following a successful extraction of the OpenAI API key, the output should be th
 
     Loaded openai api key
 
-Since we want to use a different embedding model, we change the default model in the `Settings` object. Then we use the `SimpleDirectoryReader` as before to read our documents. 
+We set the embedding model in the `Settings` object, as we did for the in-memory index. This model must match `EMBED_DIM`. Then we use the `SimpleDirectoryReader` as before to read our documents. 
 ```python
 Settings.embed_model = OpenAIEmbedding(model=EMBED_MODEL_NAME)
 
@@ -390,9 +401,11 @@ else:
 ```
 When building the index for the first time (`BUILD_INDEX=True`), the output will look like the following:
 
-    Indexed documents into Postgres table: data_li_brightleaf_pgvector
+    Indexed documents into Postgres table: li_brightleaf_pgvector
 
-As seen in the image at the beginning of the lesson, the storage context is able to interface with any type of vector store to create the vector store index. You can think of `StorageContext` as the wiring step that tells LlamaIndex, "store and search embeddings in the PostgreSQL table." It basically acts like an abstraction layer that allows the `VectorStoreIndex` to be built from different kinds of vector stores (such as `PGVectorStore`). Thus, the "Storage Context" arrow goes from the dotted block with all different types of vector stores to "Vector Store Index" in the figure at the start of the lesson. After this, the rest of the workflow is the same as the previous implementation: LlamaIndex chunks the documents into nodes (which are called chunks in the example from the previous lesson), embeds them, stores them, and later embeds the user query to retrieve the top-k most relevant nodes for the LLM.
+The code prints the value of `LI_TABLE_NAME`. Inside PostgreSQL, `PGVectorStore` adds the prefix `data_` to this name, so the actual table is named `data_li_brightleaf_pgvector`.
+
+As seen in the image at the beginning of the lesson, the storage context is able to interface with any type of vector store to create the vector store index. You can think of `StorageContext` as the wiring step that tells LlamaIndex, "store and search embeddings in the PostgreSQL table." It basically acts like an abstraction layer that allows the `VectorStoreIndex` to be built from different kinds of vector stores (such as `PGVectorStore`). Thus, the "Storage Context" arrow goes from the dotted block with all different types of vector stores to "Vector Store Index" in the figure at the start of the lesson. After this, the rest of the workflow is the same as the previous implementation: LlamaIndex chunks the documents into nodes (LlamaIndex uses the word "node" for a chunk), embeds them, stores them, and later embeds the user query to retrieve the top-k most relevant nodes for the LLM.
 
 Once we have the index constructed, we can build the query engine.
 
@@ -455,7 +468,7 @@ The response is comprehensive and accurate with the retrieved nodes (chunks) als
 That's it! We've set up the system to build and query the pgvector store! Let's test it out without the table creation steps.
 
 ### Query-only pattern (for later runs)
-Recall from the previous lesson that once you've built the docker database, it will remain there even if you restart your jupyter kernel or stop your docker container connection (i.e. it is a "persistent" database). For later runs, you don't need to recreate this database. You can simply run the following code that creates the `PGVectorStore` with the database connection parameters, creates the `VectorStoreIndex` from it, converts it to a query engine and answers a user query. To test this properly, clear all outputs and restart the kernel (assuming a jupyter notebook), stop running the docker container, then restart it and try running the following code. 
+Once you have built the database table, it will remain there even if you restart your jupyter kernel or stop your docker container connection (i.e. it is a "persistent" database). For later runs, you don't need to recreate this database. You can simply run the following code that creates the `PGVectorStore` with the database connection parameters, creates the `VectorStoreIndex` from it, converts it to a query engine and answers a user query. To test this properly, clear all outputs and restart the kernel (assuming a jupyter notebook), stop running the docker container, then restart it and try running the following code. 
 
 ```python
 from llama_index.core import VectorStoreIndex, Settings
@@ -545,22 +558,24 @@ The output should look something like this.
 
 If there is a reading error (usually due to the document not being in the UTF-8 encoding format), the text will have some random symbols that do not resemble the english language.
 
-LlamaIndex uses predefined defaults for the chunking parameters and the embedding model. If not specified, LlamaIndex uses OpenAI's "text-embedding-ada-002" model. You can change these values before creating the vector store index to make sure LlamaIndex uses your custom values. To check the default values you can run the following code.
+LlamaIndex uses predefined defaults for the chunking parameters and the embedding model. If you do not set an embedding model, LlamaIndex uses OpenAI's `text-embedding-ada-002` model. Earlier in this lesson, we set the embedding model to `text-embedding-3-small`. You can change these values before creating the vector store index to make sure LlamaIndex uses your custom values. To check the current values, you can run the following code.
 
 ```python
 from llama_index.core import Settings
 
-print(f"Default chunk size:  {Settings.chunk_size}")
-print(f"Default chunk overlap: {Settings.chunk_overlap}")
-print(f"Default embedding model: {Settings.embed_model.model_name}")
+print(f"Chunk size:  {Settings.chunk_size}")
+print(f"Chunk overlap: {Settings.chunk_overlap}")
+print(f"Embedding model: {Settings.embed_model.model_name}")
 ```
-The output should be the following.
+If you ran the earlier code that sets the embedding model, the output should be the following.
 
-    Default chunk size:  1024
-    Default chunk overlap: 200
-    Default embedding model: text-embedding-ada-002
+    Chunk size:  1024
+    Chunk overlap: 200
+    Embedding model: text-embedding-3-small
 
-To change these values and the embedding model to different OpenAI embedding model, you can do the following.
+If you did not set the embedding model, the last line shows `text-embedding-ada-002` instead.
+
+To change the chunking parameters and the embedding model, you can do the following.
 ```python
 ## Optional: Change default chunking parameters and embedding model (Run before creating vector store index)
 from llama_index.embeddings.openai import OpenAIEmbedding
@@ -612,11 +627,11 @@ conn.close()
 print(f"Listed tables: {tables}")
 ```
 
-Recall that you're using pgvector to explicitly communicate with PostgreSQL in the docker container through SQL commands. The `list_sql` command is basically an SQL command to output the list of table names. Assuming you only built the `data_li_brightleaf_pgvector` table once, the output should be the following:
+Recall that you're using pgvector to explicitly communicate with PostgreSQL in the docker container through SQL commands. The `list_sql` command is basically an SQL command to output the list of table names. If the database contains only the table that LlamaIndex built, the output should be the following:
 
-    Listed tables: [('rag_chunks',), ('data_li_brightleaf_pgvector',)]
+    Listed tables: [('data_li_brightleaf_pgvector',)]
 
-`rag_chunks` is a table from a prior setup, if present. In case you found duplicates of the `data_li_brightleaf_pgvector` table, you can drop one copy of the table using the following code.
+If you ran the build step more than once, the `data_li_brightleaf_pgvector` table contains duplicate rows. To start over, you can drop the whole table with the following code and then build the index again.
 
 ```python
 # Optional reset: drop the LlamaIndex-managed table so you can rebuild cleanly
@@ -624,7 +639,8 @@ Recall that you're using pgvector to explicitly communicate with PostgreSQL in t
 
 import psycopg2
 
-drop_sql = f'DROP TABLE IF EXISTS "{LI_TABLE_NAME}";'
+# PGVectorStore stores the data in a table named "data_" + LI_TABLE_NAME
+drop_sql = f'DROP TABLE IF EXISTS "data_{LI_TABLE_NAME}";'
 
 conn = psycopg2.connect(
     host=PG_HOST,
@@ -639,7 +655,7 @@ cur.execute(drop_sql)
 cur.close()
 conn.close()
 
-print(f"Dropped table (if existed): {LI_TABLE_NAME}")
+print(f"Dropped table (if existed): data_{LI_TABLE_NAME}")
 ```
 
 Additionally, here are some common issues you may face and how to solve them.

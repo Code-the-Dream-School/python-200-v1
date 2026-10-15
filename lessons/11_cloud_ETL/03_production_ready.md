@@ -169,7 +169,7 @@ In a real production environment, pipelines are usually scheduled automatically 
 
 [Prefect Cloud](https://www.prefect.io/cloud) provides a hosted version of this infrastructure with additional monitoring, alerting, and collaboration features. The [Prefect documentation on deployments](https://docs.prefect.io/v3/deploy/index) covers the full setup.
 
-In the practicum that follows this course, you'll deploy exactly this flow to run attended on AWS. Here's how you'll make that transition:
+In the practicum that follows this course, you'll deploy exactly this flow to run unattended on AWS. Here's how you'll make that transition:
 
 | What You Built with Prefect               | How You'll Refactor to AWS                        |
 |-------------------------------------------|---------------------------------------------------|

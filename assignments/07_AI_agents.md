@@ -24,11 +24,13 @@ When finished, commit the files to your repo and open a PR as discussed in the a
 
 Note it is very helpful for your mentors if you write your thoughts/comments in your code. This helps us understand your thought process and give you better feedback.
 
-**Setup reminder:** These exercises require an OpenAI API key in a `.env` file (same setup as Weeks 5 and 6). For the smolagents questions, make sure you have installed the library:
+**Setup reminder:** These exercises require an OpenAI API key in a `.env` file (same setup as Weeks 5 and 6). Install `smolagents` for the smolagents questions and `scipy` for the correlation tool:
 
 ```bash
-pip install smolagents
+pip install smolagents scipy
 ```
+
+**Data for the warmup:** Questions Q4–Q8 use the `bike_commute.csv` file from the lesson. Create a folder called `resources/` inside `assignments_07/`. Copy `lessons/07_AI_agents/resources/bike_commute.csv` from the course repo into that folder. The lesson code uses `Path("resources")`, which is relative to the folder where you run the script. Run `warmup_07.py` from inside `assignments_07/` so that the path is correct.
 
 # Part 1: Warmup Exercises
 
@@ -82,7 +84,7 @@ Add a comment after each `print()` explaining whether a tool was called and why.
 
 ## Lesson 03: Multi-Tool Agent
 
-For Q4–Q6, use the full `CsvManager` class and `run_agent_cycle` setup from the lesson (copy them into your file). You will extend them.
+For Q4–Q6, use the full `CsvManager` class and `run_agent_cycle` setup from the lesson (copy them into your file). You will extend them. Make sure `bike_commute.csv` is in `assignments_07/resources/` (see the setup note at the top of this page).
 
 ### Q4
 
@@ -200,6 +202,41 @@ def load_happiness_data() -> dict:
 ```
 
 Load and merge all yearly CSVs from `happiness_project/` (use a loop over the yearly files and concatenate them). Store the result in the global `df`. Return a dict with `"shape"` and `"columns"`.
+
+**Loading the files.** Open one of the CSV files in a text editor before you write the tool. You will notice four things that the code must handle:
+
+1. The files use semicolons (`;`) to separate columns, not commas.
+2. The numbers use a comma as the decimal point, so a score is written as `7,59` instead of `7.59`.
+3. The column names contain spaces and capital letters, such as `Happiness score` and `GDP per capita`. The 2024 file calls the score `Ladder score` instead of `Happiness score`.
+4. No file has a `year` column. The year is only in the file name, such as `world_happiness_2020.csv`.
+
+The queries in Task 3 use the column names `country`, `region`, `happiness_score`, `gdp_per_capita`, and `year`. Your tool must produce those columns. Here is one way to do it. You can use this code inside `load_happiness_data`:
+
+```python
+from pathlib import Path
+import pandas as pd
+
+DATA_DIR = Path("happiness_project")
+
+COLUMN_NAMES = {
+    "Country": "country",
+    "Regional indicator": "region",
+    "Happiness score": "happiness_score",
+    "Ladder score": "happiness_score",   # the 2024 file uses this name
+    "GDP per capita": "gdp_per_capita",
+}
+
+frames = []
+for path in sorted(DATA_DIR.glob("world_happiness_*.csv")):
+    year_df = pd.read_csv(path, sep=";", decimal=",")
+    year_df = year_df.rename(columns=COLUMN_NAMES)
+    year_df["year"] = int(path.stem.split("_")[-1])   # "world_happiness_2020" -> 2020
+    frames.append(year_df)
+
+df = pd.concat(frames, ignore_index=True)
+```
+
+The other columns, such as `Social support`, keep their original names. You may rename them too if you want. After loading, `df` should have about 1,500 rows, one for each country in each year from 2015 to 2024.
 
 **Tool 2: `summarize_column`**
 
@@ -359,7 +396,7 @@ When you run it, all five guided queries should complete, the plot should be sav
 
 - This assignment builds and runs LLM-driven agents. The agent's behavior, the number of tool calls it makes, and any text or explanation it generates will **vary from run to run**. Do NOT fail a student because their agent's wording, step count, or reasoning differs from a reference answer or from another student's. Judge whether the student built the required tools and structure correctly, not whether the agent produced identical output.
 - Much of Part 1 asks the student to copy setup code from the lesson (for example `run_agent`, the `CsvManager` class, `run_agent_cycle`, the `TOOLS` list, and the lesson's `SYSTEM_PROMPT`). The reviewer cannot see the lesson. Do NOT fail a student for not matching lesson code that is not shown in this assignment; grade against the concrete requirements stated below.
-- File paths and folder layout (`assignments_07/`, `warmup_07.py`, `project_07.py`, `outputs/`, `happiness_project/`, `outputs/happiness_by_region.png`) are checked by the automated run, not by reviewer inspection. Do NOT fail a student over a path or directory name you cannot verify.
+- File paths and folder layout (`assignments_07/`, `warmup_07.py`, `project_07.py`, `outputs/`, `resources/bike_commute.csv`, `happiness_project/`, `outputs/happiness_by_region.png`) are checked by the automated run, not by reviewer inspection. Do NOT fail a student over a path or directory name you cannot verify.
 - Exact-vs-example: tool and function names the tasks reference (`celsius_to_fahrenheit`, `load_happiness_data`, `summarize_column`, `compute_correlation`, `get_top_n_countries`) and the return-dict keys (`col1`, `col2`, `pearson_r`, `p_value`, `shape`, `columns`) — `Use exactly as written (later tasks depend on these names)`. Sample queries, the `SYSTEM_PROMPT` wording, the `api_key`/`model_id` values, and the student's own Task 4 questions — `Example — adapt to your own values`.
 
 ### Required Deliverables/Tasks
@@ -379,7 +416,7 @@ When you run it, all five guided queries should complete, the plot should be sav
 **Part 2 — Mini-Project (`project_07.py`)**
 
 - **Pre-task** — Make the `happiness_project/` yearly CSVs available to the agent (copied from `assignments/resources/happiness_project/`). Path/layout is lenient.
-- **Task 1** — Four smolagents `@tool` functions with complete Google-style docstrings: `load_happiness_data` (merges the yearly CSVs into the global `df`, returns a dict with `"shape"` and `"columns"`); `summarize_column` (returns `df[column].describe().to_dict()`, `{"error": ...}` on bad input); `compute_correlation` (Pearson r and p-value via `scipy.stats.pearsonr`, keys `"col1"`, `"col2"`, `"pearson_r"`, `"p_value"` rounded to 4 decimals, `{"error": ...}` on bad input); `get_top_n_countries` (filters by `year`, sorts by `column` descending, returns top `n` rows as a list of dicts, `{"error": ...}` on bad input). Tool names must be exact; return the described structures.
+- **Task 1** — Four smolagents `@tool` functions with complete Google-style docstrings: `load_happiness_data` (merges the yearly CSVs into the global `df`, returns a dict with `"shape"` and `"columns"`; the loaded data must have the columns the queries use, `country`, `region`, `happiness_score`, `gdp_per_capita`, and `year`. The assignment gives example loading code with `sep=";"`, `decimal=","`, a rename map, and a `year` taken from each file name. Accept any approach that produces those columns with numeric values); `summarize_column` (returns `df[column].describe().to_dict()`, `{"error": ...}` on bad input); `compute_correlation` (Pearson r and p-value via `scipy.stats.pearsonr`, keys `"col1"`, `"col2"`, `"pearson_r"`, `"p_value"` rounded to 4 decimals, `{"error": ...}` on bad input); `get_top_n_countries` (filters by `year`, sorts by `column` descending, returns top `n` rows as a list of dicts, `{"error": ...}` on bad input). Tool names must be exact; return the described structures.
 - **Task 2** — Instantiate a `CodeAgent` with the four tools, an `OpenAIServerModel`, a system prompt/instructions, `additional_authorized_imports`, and `max_steps`. The `SYSTEM_PROMPT` wording and the `api_key`/`model_id` are examples — adapt freely.
 - **Task 3** — Run the five guided queries in sequence with `reset=False` and print each response; the fifth query should lead the agent to write matplotlib code and save a line chart (one line per region) to `outputs/happiness_by_region.png`. Grade that the queries run and the plot file is produced; the exact chart appearance and agent wording vary.
 - **Task 4** — Run two of the student's own queries with `reset=False`, print each, and add a comment noting whether each triggered tool use, code generation, or both (at least one should require code). The questions themselves are the student's choice — do not fail on their content.

@@ -246,7 +246,9 @@ This isn't a toy. With a little polish, the chatbot you build here is something 
 
 *~20 minutes*
 
-Load your API key and initialize the client. Then define a `get_completion()` helper function (as seen in the prompt engineering lesson) that takes a `messages` list and returns the model's text response.
+Load your API key and initialize the client. Then define a `get_completion()` helper function that takes a `messages` list and returns the model's text response.
+
+This helper is different from the `get_completion()` function in the prompt engineering lesson. The lesson version takes a single prompt string and wraps it in a one-message list for you. This version takes the whole `messages` list, because your chatbot in Task 5 must send the full conversation history with each request.
 
 Use the helper below as written — keep the function name `get_completion`, since later tasks call it by this name. The parameter defaults (`model`, `temperature`, `max_completion_tokens`) are reasonable starting values you may adjust:
 

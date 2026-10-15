@@ -137,7 +137,7 @@ Those cover the success path. Now the error paths, which matter just as much. Th
 ```python
 def test_missing_feature_raises(clf):
     with pytest.raises(ValueError, match="missing required features"):
-        clf.predict([{"temperature_2m_max": 18, "temperature_2m_min": 9}])   # no precipitation or wind_speed_10m_max
+        clf.predict([{"temperature_2m_max": 18, "temperature_2m_min": 9}])   # no precipitation_sum or wind_speed_10m_max
 
 
 def test_missing_model_file_raises(tmp_path):

@@ -13,7 +13,7 @@ By the end of this lesson, you will be able to:
 
 ## The Open-Meteo Historical API
 
-You used the Open-Meteo API in Week 4 to build and train the weather classifier. The same API, the same four variables, and the same date range will feed the pipeline here. Using the same data ensures that when Week 10 runs the saved classifier against `weather_raw`, the feature values match what the model was trained on.
+You used the Open-Meteo API in Week 3 to train the weather classifier. The same API, the same four variables, and the same date range will feed the pipeline here. Using the same data ensures that when Week 10 runs the saved classifier against `weather_raw`, the feature values match what the model was trained on.
 
 A quick review of the API call for Charlotte, NC:
 
@@ -223,4 +223,4 @@ Notice the comment labels: `Extract`, `Transform`, and `Load`. The transform ste
 
 The Extract + Load pattern is straightforward: fetch data from an API, reshape it into row dictionaries, and upsert it into the database. Using `upsert` with `on_conflict` makes the load step idempotent — re-running produces the same result as running once. The 365 rows now sitting in `weather_raw` are the starting point for everything that follows.
 
-In Week 10, you will read those rows back out, pass them through the weather classifier you saved in Week 4, enrich the results with an LLM, and write the output to `weather_enriched`. The pipeline is taking shape.
+In Week 10, you will read those rows back out, pass them through the weather classifier you trained in Week 3 and packaged in Week 4, enrich the results with an LLM, and write the output to `weather_enriched`. The pipeline is taking shape.

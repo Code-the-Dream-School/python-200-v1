@@ -16,6 +16,9 @@ A platform-agnostic introduction to cloud computing: what it is, why it matters,
 2. [The Cloud Provider Landscape](https://github.com/Code-the-Dream-School/python-200-v1/blob/main/lessons/08_cloud_intro/02_cloud_landscape.md)
 A survey of the cloud provider ecosystem: the big three hyperscalers (AWS, GCP, Azure), developer-tier platforms (DigitalOcean, Render, Cloudflare), and backend-as-a-service platforms (Firebase, Supabase). Includes a service taxonomy that maps common data engineering categories — compute, object storage, managed databases, LLM APIs, ML platforms — across providers, and closes with an explanation of why this course uses Supabase for weeks 9–11.
 
+3. (Optional, Recommended) [Practicum AWS Bridge, Part 1: IAM Permissions](https://github.com/Code-the-Dream-School/python-200-v1/blob/main/lessons/08_cloud_intro/03_aws_bridge_iam.md)
+The first of four optional lessons that prepare you for the AWS work in the practicum. It introduces a small mini-project, an automatic alert for low assignment submission rates, and covers IAM: how AWS policy documents grant and deny permissions, how AWS combines Allow and Deny statements, and the principle of least privilege. This lesson is a pilot this term, and you can skip it without any effect on your grade.
+
 ## Week 8 Assignments
 
 Scroll down to see the Coding Assignment instruction and get more hands-on practice with the material.  Also, don't forget to take your weekly quiz in AIRHub this week!

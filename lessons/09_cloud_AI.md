@@ -15,6 +15,9 @@ With a connection established, you need somewhere to put data. This lesson intro
 3. [The Extract + Load Pipeline](https://github.com/Code-the-Dream-School/python-200-v1/blob/88c2853c4caaee120b8ac229ab5d8fe78ff92c91/lessons/09_cloud_data/03_loading_pipeline.md)
 Puts it all together: fetch a year of daily weather data from the Open-Meteo historical archive API, shape the records, and upsert them into `weather_raw`. This is the Extract + Load skeleton you will build on in weeks 10 and 11, when the double-transform step is added.
 
+4. (Optional, Recommended) [Practicum AWS Bridge, Part 2: Settings and Secrets](https://github.com/Code-the-Dream-School/python-200-v1/blob/main/lessons/09_cloud_data/04_aws_bridge_secrets.md)
+The second of four optional lessons that prepare you for the AWS work in the practicum. It explains where a Lambda function keeps its settings and secrets, introduces AWS Parameter Store and the `boto3` library, and shows how to test AWS code on your own computer with `moto`. This lesson is a pilot this term, and you can skip it without any effect on your grade.
+
 ## Week 9 Assignments
 
 Scroll down to see the Coding Assignment instruction and get more hands-on practice with the material. Also, don't forget to take your weekly quiz in AIRHub this week!
