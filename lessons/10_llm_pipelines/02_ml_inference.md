@@ -120,7 +120,7 @@ for r in enrichment_records[:3]:
     print(f"  {r['date']}: {r['confidence']:.3f}")
 ```
 
-The fraction of good days should be consistent with what you saw during training. For Charlotte, NC using 2023 data, roughly 30–40% of days should be classified as good. If the number looks wildly off — nearly zero or nearly all — check that the feature column order matches the training order and that the model file corresponds to the same city you loaded data for.
+The fraction of good days should be consistent with what you saw during training. For Charlotte, NC using 2023 data, roughly 30–40% of days should be classified as good. If the number looks wildly off — nearly zero or nearly all — check that the model file corresponds to the same city and date range you loaded data for. The component handles the feature column order for you, so you do not need to check it.
 
 ## Check for Understanding
 
