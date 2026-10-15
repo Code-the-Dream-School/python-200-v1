@@ -1,0 +1,29 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "ReadAlertSettings",
+      "Effect": "Allow",
+      "Action": ["ssm:GetParameter", "ssm:GetParameters"],
+      "Resource": "arn:aws:ssm:us-east-1:123456789012:parameter/ctd/submission-alert/*"
+    },
+    {
+      "Sid": "BlockAdminSettings",
+      "Effect": "Deny",
+      "Action": "ssm:*",
+      "Resource": "arn:aws:ssm:us-east-1:123456789012:parameter/ctd/submission-alert/admin/*"
+    },
+    {
+      "Sid": "PublishSubmissionMetric",
+      "Effect": "Allow",
+      "Action": "cloudwatch:PutMetricData",
+      "Resource": "*"
+    },
+    {
+      "Sid": "WriteOwnLogs",
+      "Effect": "Allow",
+      "Action": ["logs:CreateLogStream", "logs:PutLogEvents"],
+      "Resource": "arn:aws:logs:us-east-1:123456789012:log-group:/aws/lambda/submission-alert:*"
+    }
+  ]
+}
