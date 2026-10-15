@@ -2,7 +2,7 @@
 
 In Weeks 5 through 7, you used language models the way most people first encounter them: as a conversational interface. You sent a message, got a response, maybe kept a conversation going. The model was a partner you were talking to.
 
-This week, the framing shifts. An LLM is no longer the end product — it is a processing step inside a larger pipeline. But it is not the only processing step. This week's transform stage has two components: first, the weather classifier you built and saved in Week 4 makes a binary prediction; then an LLM adds a short natural-language recommendation. Both are transforms. They have different strengths and complement each other in ways that neither could achieve alone.
+This week, the framing shifts. An LLM is no longer the end product — it is a processing step inside a larger pipeline. But it is not the only processing step. This week's transform stage has two components: first, the weather classifier you trained in Week 3 and packaged in Week 4 makes a binary prediction; then an LLM adds a short natural-language recommendation. Both are transforms. They have different strengths and complement each other in ways that neither could achieve alone.
 
 ## Learning Objectives
 
