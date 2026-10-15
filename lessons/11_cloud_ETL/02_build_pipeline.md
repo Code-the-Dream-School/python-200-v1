@@ -27,25 +27,30 @@ This pipeline requires packages from Weeks 9 and 10:
 uv pip install prefect requests openai python-dotenv supabase joblib scikit-learn pandas
 ```
 
-Your `models/weather_classifier.pkl` and `models/weather_classifier_metadata.json` files from Week 4 must be present in the directory where you run the script.
+Copy two things from your Week 4 assignment into the directory where you run the script: the `weather_model/` package (the `WeatherClassifier` component) and the `models/` directory that holds `weather_classifier.pkl`. This is the same setup you used in Week 10.
 
 Define your shared constants and clients at the top of the script. The Supabase and OpenAI clients are initialized once and passed into tasks via closure — they do not need to be recreated on every task call:
 
 ```python
 import os
-import json
 from dotenv import load_dotenv
 from supabase import create_client
 from openai import OpenAI
+
+from weather_model import WeatherClassifier
 
 load_dotenv()
 
 supabase = create_client(os.getenv("SUPABASE_URL"), os.getenv("SUPABASE_KEY"))
 openai_client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
+classifier = WeatherClassifier("models/weather_classifier.pkl")
 
-with open("models/weather_classifier_metadata.json") as f:
-    metadata = json.load(f)
-FEATURES = metadata["features"]
+DAILY_VARIABLES = [
+    "temperature_2m_max",
+    "temperature_2m_min",
+    "precipitation_sum",
+    "wind_speed_10m_max",
+]
 
 SYSTEM_PROMPT = (
     "You are writing a one-sentence running recommendation for a daily weather summary app. "
@@ -75,7 +80,7 @@ def extract() -> list:
         "longitude":  LONGITUDE,
         "start_date": "2023-01-01",
         "end_date":   "2023-12-31",
-        "daily": FEATURES,
+        "daily": DAILY_VARIABLES,
         "timezone": "America/New_York",
     }
     response = requests.get(url, params=params)
@@ -114,15 +119,13 @@ def load_raw(records: list) -> None:
     print(f"Upserted {len(response.data)} rows into weather_raw")
 ```
 
-This task must complete before the transform task runs — the ML classifier's incremental check queries `weather_enriched`, not `weather_raw`, so there is no strict ordering dependency between the two load steps. But logically, raw data should be persisted before transformation begins. The sequential flow structure enforces this naturally.
+This task must complete before the `load_enriched` task runs. The `weather_enriched` table has a foreign key on `date`, so every enriched row needs a matching row in `weather_raw`. The transform task does not depend on this task, because its incremental check queries `weather_enriched`, not `weather_raw`. The flow calls the tasks in order, so the raw data is always stored before the enriched data.
 
 ## The Transform Task
 
 The transform task encapsulates the double-transform from Week 10: ML inference followed by LLM enrichment. Structuring it as a single task keeps the flow clean while still making the two internal stages explicit through comments and print statements:
 
 ```python
-import joblib
-import pandas as pd
 from prefect import task
 
 @task
@@ -140,23 +143,19 @@ def transform(raw_records: list) -> list:
         return []
 
     # --- ML classify ---
-    clf = joblib.load("models/weather_classifier.pkl")
-    df  = pd.DataFrame(to_process)
-    X   = df[FEATURES]
+    predictions = classifier.predict(to_process)
 
-    predictions   = clf.predict(X)
-    probabilities = clf.predict_proba(X)[:, 1]
-
-    print(f"ML classification complete. Good days: {int(predictions.sum())} / {len(predictions)}")
+    good = sum(1 for p in predictions if p.label == "good")
+    print(f"ML classification complete. Good days: {good} / {len(predictions)}")
 
     enrichment_records = [
         {
-            "date":             to_process[i]["date"],
-            "good_for_running": bool(predictions[i]),
-            "confidence":       round(float(probabilities[i]), 4),
+            "date":             row["date"],
+            "good_for_running": pred.label == "good",
+            "confidence":       round(pred.probability, 4),
             "llm_summary":      None,
         }
-        for i in range(len(to_process))
+        for row, pred in zip(to_process, predictions)
     ]
 
     # --- LLM enrich ---
@@ -194,7 +193,9 @@ def transform(raw_records: list) -> list:
 Several production patterns are present here:
 
 - The incremental check means re-running the flow on data already transformed does no extra work — and no extra LLM cost.
-- `clf.predict` and `clf.predict_proba` are called once on the full DataFrame, not in a loop. Batch inference is significantly faster than record-by-record inference.
+- The `WeatherClassifier` component is created once at the top of the script, so the model file is loaded only once.
+- `classifier.predict()` is called once on the full list of records, not in a loop. Batch inference is much faster than classifying one record at a time.
+- Each `Prediction` gives you a `label` and a `probability`. The component selects the feature columns in the correct order, so the extra `date` key on each row is ignored.
 - LLM failures are caught and replaced with a fallback string rather than crashing the task.
 - Progress logs every 50 records make long-running transforms easy to follow in the Prefect UI.
 
@@ -252,13 +253,15 @@ Run the pipeline in a second terminal:
 python etl_pipeline.py
 ```
 
-On the first run, you should see:
-1. The extract task fetch 365 records
-2. The load_raw task upsert them into `weather_raw`
-3. The transform task classify all 365 and enrich them with LLM recommendations (this takes several minutes — each LLM call is ~1 second)
-4. The load_enriched task upsert them into `weather_enriched`
+Your Week 10 script already enriched every date, so your first run of this pipeline should look like this:
+1. The extract task fetches 365 records.
+2. The load_raw task upserts them into `weather_raw`.
+3. The transform task finds that every date is already in `weather_enriched`. It prints `All records already enriched — nothing to do.` and returns an empty list.
+4. The load_enriched task prints `No new enrichment records to load.` and exits.
 
-The transform step is the longest by far. Progress prints every 50 records give you visibility while it runs.
+This is the incremental check working correctly. The run is fast, and it makes no LLM calls.
+
+If you want to see a full run, delete some or all of the rows from `weather_enriched` in the Supabase dashboard, and then run the pipeline again. The transform task then classifies the missing dates and sends one LLM request for each of them. A full run of 365 records takes several minutes, because each LLM call takes about one second. Each call also uses your OpenAI credits again, so delete only as many rows as you need. During a long run, the transform task prints its progress every 50 records.
 
 ## Reading the Prefect UI
 
