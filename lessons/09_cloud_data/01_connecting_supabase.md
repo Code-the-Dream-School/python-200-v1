@@ -23,6 +23,8 @@ Supabase has a generous free tier that is more than sufficient for this course. 
 
 ## Creating a Project
 
+> **Did you do this in Week 8?** In the Week 8 assignment you created a Supabase project, created the `weather_raw` and `weather_enriched` tables, and saved your Project URL and anon key in a `.env` file. If you did all of that, skip the "Creating a Project" and "Getting Your Credentials" sections and do not create a second project. Read "Storing Credentials Safely" to check your `.env` and `.gitignore`, and then continue with "Connecting with supabase-py". If you did not finish the Week 8 setup, follow every step in this lesson.
+
 1. Go to [supabase.com](https://supabase.com) and sign up for a free account.
 2. Click **New project**. Give it a name (e.g., `python200`), choose a region close to you, and set a database password. Save that password somewhere — you will not need it for this course, but it is useful to have.
 3. Wait for the project to finish provisioning (usually 30–60 seconds).
@@ -91,9 +93,22 @@ The `supabase` object is your entry point for all database operations. It holds 
 
 ## Verifying the Connection
 
-The simplest way to confirm that everything is working is to make a request to a table that exists. In the next lesson you will create the `weather_raw` table, but first let's verify the client itself is configured correctly.
+The simplest way to confirm that everything is working is to read from a table that has one known row in it. You will create a small test table for this check and delete it afterward.
 
-In your project dashboard, navigate to the **Table Editor** and create a small test table called `connection_test` with a single column `message` (type: text). Insert one row with the text `"hello"`.
+In your project dashboard, open the **SQL Editor** and run the following SQL. It creates a table called `connection_test`, turns off Row Level Security (RLS) for it, and inserts one row:
+
+```sql
+CREATE TABLE connection_test (
+  id      bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  message text
+);
+
+ALTER TABLE connection_test DISABLE ROW LEVEL SECURITY;
+
+INSERT INTO connection_test (message) VALUES ('hello');
+```
+
+The `ALTER TABLE` line is important. Supabase turns on RLS for every new table. When RLS is on and no access policy exists, a request with the anon key returns no rows, even though the row is in the table. The section "A Note on Row Level Security" below explains RLS in more detail.
 
 Then run this script:
 
@@ -116,7 +131,13 @@ You should see:
 [{'id': 1, 'message': 'hello'}]
 ```
 
-If you get an empty list, the table exists but is empty. If you get an error, check your URL and key in `.env`. Once this works, you can delete the `connection_test` table from the dashboard — it was only for verification.
+If you get an empty list, the connection works, but the request cannot see the row. Either RLS is still on for `connection_test`, or the `INSERT` did not run. Run the `ALTER TABLE` and `INSERT` lines again, and then rerun the script. If you get an error, check your URL and key in `.env`.
+
+Once this works, delete the test table. It was only for this check. Run this in the SQL Editor:
+
+```sql
+DROP TABLE connection_test;
+```
 
 ## A Note on Row Level Security
 
