@@ -13,7 +13,6 @@ In your `python200-homework` repository, create a folder called `assignments_04/
 ```text
 assignments_04/
 ├── warmup_04.py                        <- Part 1: the warmup exercises
-├── weather_classification.csv          <- copied from the course repo (see below)
 ├── weather_model/                      <- Part 2: your component
 │   ├── __init__.py
 │   └── classifier.py
@@ -26,10 +25,7 @@ assignments_04/
 └── predict_weather.py
 ```
 
-Two files to copy in before you start:
-
-- Copy `weather_classification.csv` from `lessons/03_ML_classification/resources/` into `assignments_04/`. The warmups and the training step use it.
-- Copy the `weather_classifier.pkl` and `weather_classifier_metadata.json` you saved in the Week 3 assignment into `assignments_04/models/`. If you do not have them, retrain and save a model using your Week 3 `train_classifier.py`.
+Before you start, copy the `weather_classifier.pkl` and `weather_classifier_metadata.json` you saved in the Week 3 assignment into `assignments_04/models/`. If you do not have them, retrain and save a model using your Week 3 `train_classifier.py`.
 
 Create an **empty** file called `conftest.py` at the top of `assignments_04/`, exactly as you did in Week 1. It lets `pytest` import your `weather_model` package when run from `assignments_04/`. Without it, the tests fail with `ModuleNotFoundError: No module named 'weather_model'`.
 
@@ -123,7 +119,7 @@ Write `weather_model/__init__.py` so that `from weather_model import WeatherClas
 
 Write tests in `tests/test_classifier.py`. They must pass when you run `pytest` from `assignments_04/`.
 
-So the tests do not depend on any particular saved file, build a tiny model inside a fixture and save it to pytest's `tmp_path`, then load a `WeatherClassifier` from it. Write **at least six** tests covering both the success path and the error paths:
+So the tests do not depend on any particular saved file, build a tiny model inside a fixture and save it to pytest's `tmp_path`, then load a `WeatherClassifier` from it. Your tests must check **all seven** behaviors below, which cover both the success path and the error paths. One test function may check more than one behavior. For example, a parametrized test can check behaviors 1 and 2 together. So you will write **at least six** test functions:
 
 1. A clearly good day is labeled `"good"`.
 2. A clearly bad day (cold, rainy, windy) is labeled `"skip"`.
@@ -200,7 +196,7 @@ Good luck. The component you build this week is the one your pipeline will depen
 - **Task 1 — `Prediction` dataclass** in `weather_model/classifier.py` with `label: str` and `probability: float` and a docstring.
 - **Task 2 — `WeatherClassifier` class**: `__init__` raises `FileNotFoundError` for a missing file and otherwise loads the pipeline with `joblib`; `predict` returns `[]` for empty input, raises `ValueError` naming missing features, selects the four features in fixed order, and returns one `Prediction` per day (converting 1/0 to "good"/"skip" and taking the probability from column 1). Type hints and docstrings present.
 - **Task 3 — `weather_model/__init__.py`** re-exports `WeatherClassifier` and `Prediction` (so `from weather_model import WeatherClassifier` works) with an `__all__`.
-- **Task 4 — `tests/test_classifier.py`**: at least six tests covering the successes (good label, skip label, probability in range, one result per day in order, empty list) and the error paths (missing feature raises `ValueError`, missing file raises `FileNotFoundError`), using a `tmp_path`-based fixture and `pytest.raises(..., match=...)`. At least one test uses `@pytest.mark.parametrize`. Passes via `pytest` from `assignments_04/`.
+- **Task 4 — `tests/test_classifier.py`**: tests that cover all seven listed behaviors, in at least six test functions (one function, often a parametrized one, may cover two behaviors such as the good and skip labels). The behaviors are the successes (good label, skip label, probability in range, one result per day in order, empty list) and the error paths (missing feature raises `ValueError`, missing file raises `FileNotFoundError`), using a `tmp_path`-based fixture and `pytest.raises(..., match=...)`. At least one test uses `@pytest.mark.parametrize`. Passes via `pytest` from `assignments_04/`.
 - **Task 5 — `predict_weather.py`**: loads the real saved model into a `WeatherClassifier`, predicts for at least four varied days, prints a readable line per day, with the work in `main()` under an `if __name__ == "__main__":` guard; a comment on omitting the guard.
 - **Task 6 — Reflection**: a comment block answering the three questions (a bug the fixed feature order prevents; why the test fixture trains its own model; one production-readiness point and one thing to add).
 
