@@ -15,6 +15,9 @@ Fills in the skeleton with the real tasks from weeks 9 and 10: extract from Open
 3. [Making Pipelines Production-Ready](https://github.com/Code-the-Dream-School/python-200-v1/blob/3fe449c9e0b7eab8a885c1721e004eb581410cbe/lessons/11_cloud_ETL/03_production_ready.md)
 Introduces four patterns that separate a working pipeline from a reliable one: retries for transient failures, `raise_for_status()` for clean error propagation, structured logging, and idempotent writes via `upsert` with `on_conflict` combined with the incremental processing check. Closes with a brief look at what comes next — scheduling, Prefect Cloud, and parameterized deployments.
 
+4. (Optional) [Practicum AWS Bridge, Part 4: Assembly](https://github.com/Code-the-Dream-School/python-200-v1/blob/main/lessons/11_cloud_ETL/04_aws_bridge_assembly.md)
+The last of four optional lessons that prepare you for the AWS work in the practicum. The alert's handler sends its result to CloudWatch as a metric, and a CloudWatch alarm watches it. You test the whole alert on your own computer, and you check its IAM permissions before deployment. This lesson is a pilot this term, and you can skip it without any effect on your grade.
+
 ## Week 11 Assignment
 
 Once you finish the lessons, scroll down to the Coding Assignment instructions below for details on the capstone project.
