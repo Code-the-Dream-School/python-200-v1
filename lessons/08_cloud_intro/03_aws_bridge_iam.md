@@ -1,10 +1,13 @@
 # (Optional) Practicum AWS Bridge, Part 1: IAM Permissions
 
-> **This lesson is optional this term.** The Practicum AWS Bridge is a new set of four short lessons, one each week from Week 8 to Week 11. We are running it as a pilot. You can skip it without any effect on your grade. If you do it, your feedback will help us improve it before we add it to the main course.
+> **Ready to get a head start on real-world cloud skills?** 
+> The Practicum AWS Bridge is a new, optional series running across Weeks 8–11. While you can skip it without impacting your grade, taking it on gives you direct, hands-on experience with core AWS services—and your feedback will directly shape the future of this course.
 
-The practicum that follows this course deploys a pipeline on AWS. In the previous lesson, you read a short description of the AWS services the practicum uses: Lambda, EventBridge, IAM, CloudWatch, and Parameter Store. The Practicum AWS Bridge gives you hands-on practice with those services before the practicum starts, so that their names and their main ideas are familiar.
+### Why Jump In?
+The upcoming practicum deploys a full data pipeline on AWS using tools like **Lambda, EventBridge, IAM, CloudWatch, and Parameter Store**. By completing these quick, weekly bridge lessons, you’ll demystify these concepts early and walk into the practicum with confidence.
 
-You do not need an AWS account for any part of the bridge. Everything runs on your own computer.
+* **No AWS account required**
+* Experiment and build confidence ahead of time.
 
 ## Learning Objectives
 
