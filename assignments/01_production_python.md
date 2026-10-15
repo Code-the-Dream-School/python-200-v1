@@ -10,7 +10,7 @@ This week's assignments cover the week 1 material:
 
 The warmup exercises help you practice the core mechanics, so try to work through them without AI assistance. The project differs from previous weeks in one important way: **you are building a small package rather than a script.** The structure of what you submit is part of what is being assessed.
 
-Everything you build this week is an early version of something you will build again later. The schema in Task 2 becomes the extract step in Week 9, and the package layout becomes the structure of your Week 4 model component.
+Everything you build this week is an early version of something you will build again later. In Task 3, you convert columnar API data into one record per hour. Your Week 9 pipeline does the same conversion on daily data, and it uses plain dictionaries instead of Pydantic models. The package layout becomes the structure of your Week 4 model component.
 
 ---
 
@@ -193,7 +193,7 @@ Then write `test_celsius_to_fahrenheit()` asserting that:
 
 - 0 C is 32 F
 - 100 C is 212 F
-- 37 C is approximately 98.6 F
+- 36.6 C is approximately 97.88 F
 
 The third one will fail with a plain `==`. Make it pass with `pytest.approx`, and add a comment explaining why it was necessary.
 
@@ -388,7 +388,7 @@ Good luck. Remember that this week, the structure of your code is a central part
 - **Pydantic Q2** — three separate failures each caught with `try`/`except ValidationError`; the coercion demo (`"21.5"` and integer `40`) with the resulting types printed; a comment stating the coercion rule.
 - **Pydantic Q3** — one construction with several errors at once; a loop over `e.errors()` printing `loc` and `msg`; a comment on the error count and why reporting all at once helps.
 - **Pydantic Q4** — a `model_validator(mode="after")` rejecting `humidity == 0.0` **and** `temperature_c < -40`; proof a valid reading still constructs and the bad combination raises; a comment on why `Field` alone cannot express this.
-- **pytest Q1** — `celsius_to_fahrenheit` with a docstring and `test_celsius_to_fahrenheit` using `pytest.approx` for the 37 °C case; a comment on why `approx` was necessary.
+- **pytest Q1** — `celsius_to_fahrenheit` with a docstring and `test_celsius_to_fahrenheit` using `pytest.approx` for the 36.6 °C case; a comment on why `approx` was necessary.
 - **pytest Q2** — `mean` raising `ValueError` on empty input and `test_mean_of_empty_raises` using `pytest.raises(ValueError, match=...)`; a comment on what `match=` adds.
 - **pytest Q3** — `test_mean_values` with `@pytest.mark.parametrize` over ≥4 cases (including a single-element list and negatives); the pasted summary line; a comment on why one parametrized test beats four near-identical ones.
 - **pytest Q4** — the function deliberately broken, the failure output pasted into a comment, then fixed; a comment on which values pytest showed.
