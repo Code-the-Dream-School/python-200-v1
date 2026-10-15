@@ -23,6 +23,8 @@ The pipeline you are building this week has two distinct stages: loading raw wea
 
 ## Creating the Tables
 
+> **Did you do this in Week 8?** The Week 8 assignment asked you to create both tables and disable RLS on them. If you did, do **not** run the `CREATE TABLE` statements below again. Postgres will return an error such as `relation "weather_raw" already exists`. Open the **Table Editor** instead and check that both tables are there with the columns shown below. Then read the notes after the SQL, because they explain the design, and continue with "CRUD Operations with supabase-py". If you have not created the tables yet, run both SQL blocks in this section.
+
 Open your Supabase project dashboard and navigate to the **SQL Editor** (the `</>` icon in the left sidebar). Run the following SQL to create both tables:
 
 ```sql
@@ -49,7 +51,7 @@ A few things worth noting:
 - `date` is the primary key in both tables. Because weather data is one record per day, the date is a natural, unique identifier — no auto-increment ID is needed.
 - `weather_enriched.date` references `weather_raw.date` with a foreign key. This constraint enforces that you can only add an enriched record for a date that already exists in `weather_raw`. The database will reject any enrichment of data that was not first loaded.
 - `loaded_at` and `enriched_at` use `DEFAULT now()`, which means Postgres automatically records the timestamp of insertion — you do not need to set these in your Python code.
-- The column names (`temperature_2m_max`, etc.) match the field names from the Open-Meteo API response, which in turn match the feature names the ML classifier was trained on in Week 4. Keeping them consistent means no renaming is needed when you pass records to the classifier later.
+- The column names (`temperature_2m_max`, etc.) match the field names from the Open-Meteo API response, which in turn match the feature names the ML classifier was trained on in Week 3. Keeping them consistent means no renaming is needed when you pass records to the classifier later.
 
 After running the SQL, navigate to the **Table Editor** to confirm both tables appear with the correct columns.
 
