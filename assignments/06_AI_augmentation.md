@@ -29,7 +29,7 @@ Put all warmup exercises in a single file: `warmup_06.py`. Use comments to mark 
 **Before you start**, make sure the following packages are installed in your virtual environment:
 
 ```bash
-pip install openai pypdf python-dotenv "llama-index-core==0.14.10" llama-index-embeddings-openai
+pip install openai pypdf python-dotenv "llama-index-core==0.14.10" llama-index-embeddings-openai llama-index-llms-openai llama-index-readers-file
 ```
 
 You will also need a `.env` file in the same directory as your script, containing your `OPENAI_API_KEY`. Add the following block at the top of `warmup_06.py` — you will need it for the LlamaIndex section:
@@ -219,10 +219,19 @@ For this section you will build a small LlamaIndex pipeline using the Brightleaf
 **Path note**: The `brightleaf_pdfs/` directory is in the lesson folder, not the assignments folder. Point `SimpleDirectoryReader` to it using a path relative to where you run your script. Example — adapt to your own layout:
 
 ```python
-SimpleDirectoryReader("../../06_AI_augmentation/brightleaf_pdfs")
+SimpleDirectoryReader("../../06_AI_augmentation/resources/brightleaf_pdfs")
 ```
 
 Adjust this path as needed based on your local folder structure.
+
+**Embedding model**: Use `text-embedding-3-small`, the embedding model used in the lesson and in the rest of the course. If you do not set a model, LlamaIndex uses the older `text-embedding-ada-002`. Add these lines before you build your first index. Use exactly as written:
+
+```python
+from llama_index.core import Settings
+from llama_index.embeddings.openai import OpenAIEmbedding
+
+Settings.embed_model = OpenAIEmbedding(model="text-embedding-3-small")
+```
 
 **API note**: These questions make a small number of calls to the OpenAI embeddings API to build the vector index. The cost is very low (typically less than one cent), but make sure your `.env` file has a valid key before running.
 
@@ -311,7 +320,7 @@ Hint: each `Document` object has a `metadata` dictionary with a `"file_name"` ke
 
 ## Step 3: Build the Index and Query Engine
 
-Build a `VectorStoreIndex` from the loaded documents and create a query engine with `similarity_top_k=3`. Print a short confirmation message once the index is ready, such as:
+Set the embedding model to `text-embedding-3-small` first, with the same `Settings.embed_model` lines you used in the warmup. Then build a `VectorStoreIndex` from the loaded documents and create a query engine with `similarity_top_k=3`. Print a short confirmation message once the index is ready, such as:
 
 ```
 Index built successfully. Ready to answer questions.
@@ -352,7 +361,7 @@ Print the full response and **all three** retrieved source nodes (document name,
 
 Add a comment block at the end of `project_06.py` answering the following:
 
-1. The lesson built semantic RAG manually — chunking, embedding, and indexing took many lines of code. How many lines did the equivalent LlamaIndex implementation take in your project? What does that tell you about the value of using a framework?
+1. The LlamaIndex lesson lists the steps that LlamaIndex automates: chunking, embedding, and indexing. How many lines of code did your LlamaIndex implementation take in your project? Compare that with the keyword RAG code from the Keyword-based RAG lesson, or with the code you would need to write each of those steps yourself. What does that tell you about the value of using a framework?
 2. You have now built a system that answers questions from real documents. Describe a different use case — not a coffee shop — where this approach would add genuine value to a business or organization.
 3. What is one failure mode that RAG cannot fully prevent, even when retrieval is working correctly?
 
@@ -395,15 +404,15 @@ Add a comment explaining:
 
 ## Extension C (Optional): Persistent Vector Store with pgvector
 
-*This extension requires Docker to be installed on your computer. If you do not have Docker, skip it — the setup time is significant and is not the focus of this week's learning. If you do have Docker installed, refer to the pgvector setup instructions in the LlamaIndex lesson before starting.*
+*This extension requires Docker to be installed on your computer. If you do not have Docker, skip it. The setup takes significant time, and it is not the focus of this week's learning. You set up the PostgreSQL + pgvector container yourself. The course does not give step-by-step setup instructions, but the lesson's pgvector section links to resources that explain how to do it.*
 
 Replace the in-memory `SimpleVectorStore` in your project with a `PGVectorStore` backed by a PostgreSQL container. This makes your vector database persistent — it will survive a kernel restart and can be queried without re-embedding the documents each time.
 
 The code change itself is small (approximately 20 lines), but you will need:
-- Docker running with the pgvector image from the lesson
+- A PostgreSQL + pgvector container that you set up yourself, running in Docker (see the resources linked in the lesson)
 - The packages `llama-index-vector-stores-postgres` and `psycopg2-binary` installed
 
-Follow the "Persistent database semantic RAG using LlamaIndex" section of the lesson for the full setup pattern. Once it is working, add a comment comparing the experience of using the persistent store vs. the in-memory store:
+Follow the "Optional Extension: Persistent Vector Store with pgvector" section of the lesson for the code pattern. Once it is working, add a comment comparing the experience of using the persistent store vs. the in-memory store:
 - What is the main practical advantage of persisting the embeddings?
 - In what situation would you definitely want this in a production system?
 
@@ -432,7 +441,7 @@ Follow the "Persistent database semantic RAG using LlamaIndex" section of the le
 - **Keyword Q3** — a prediction and reasoning written as a comment first, then run the provided query and comment on whether the prediction held. Student's prediction is their own — do not fail its content.
 - **Semantic Q1** — comment block answering the three questions (what a vector embedding is; which of 0.85 vs 0.30 is more relevant and what the number means; why semantic search finds matches without exact word overlap), in the student's own words.
 - **Semantic Q2** — the comparison table copied in as a comment with the Semantic RAG column filled in.
-- **LlamaIndex Q1** — build an in-memory LlamaIndex pipeline over the Brightleaf PDFs and run the two provided queries with `similarity_top_k=3`; for each, print the question, the model's answer, and for each of 3 source nodes the similarity score and first 150 characters; plus a per-query comment on relevance, tone/hedging, and anything unexpected. `Use exactly as written`: `similarity_top_k=3`. Path to the PDFs is `Example — adapt to your own values`.
+- **LlamaIndex Q1** — build an in-memory LlamaIndex pipeline over the Brightleaf PDFs and run the two provided queries with `similarity_top_k=3`; for each, print the question, the model's answer, and for each of 3 source nodes the similarity score and first 150 characters; plus a per-query comment on relevance, tone/hedging, and anything unexpected. `Use exactly as written`: `similarity_top_k=3` and `Settings.embed_model = OpenAIEmbedding(model="text-embedding-3-small")`. If the embedding line is missing, give feedback, but do not fail for it, because the index still works with the default model. Path to the PDFs is `Example — adapt to your own values`.
 - **LlamaIndex Q2** — re-run one Q1 query with `similarity_top_k=1` and again with `similarity_top_k=5`, print response and source-node scores for both, and comment on how the response changed and whether more context is always better. `Use exactly as written`: the `similarity_top_k` values 1 and 5.
 - **LlamaIndex Q3** — a student-chosen challenging query, with the response and all retrieved chunks printed, and a comment on expectation vs. outcome and what to improve. Query choice is the student's own.
 - **LlamaIndex Q4** — instantiate a `FaithfulnessEvaluator` and a `RelevancyEvaluator` using `gpt-4o-mini` as the judge LLM; run on the provided query, print both scores, then run on a student-chosen lower-quality query and print those scores; plus a comment block answering the four questions. `Use exactly as written`: `FaithfulnessEvaluator`, `RelevancyEvaluator`, `gpt-4o-mini`.
@@ -442,7 +451,7 @@ Follow the "Persistent database semantic RAG using LlamaIndex" section of the le
 - **File** — all project code in `project_06.py`. `Use exactly as written (later tasks depend on these names)`: file name `project_06.py`.
 - **Step 1 — Setup** — imports at top; API key loaded from `.env` with a printed confirmation; an `assert` that the documents directory exists. The directory path is `Example — adapt to your own values`.
 - **Step 2 — Load** — load all documents with `SimpleDirectoryReader`; print how many were loaded and each file name.
-- **Step 3 — Index** — build a `VectorStoreIndex` and a query engine with `similarity_top_k=3`; print a readiness confirmation message (wording is an example). `Use exactly as written`: `similarity_top_k=3`.
+- **Step 3 — Index** — build a `VectorStoreIndex` and a query engine with `similarity_top_k=3`; print a readiness confirmation message (wording is an example). `Use exactly as written`: `similarity_top_k=3` and `Settings.embed_model = OpenAIEmbedding(model="text-embedding-3-small")`. If the embedding line is missing, give feedback, but do not fail for it, because the index still works with the default model.
 - **Step 4 — Query** — run the five provided queries in a loop (not five copied blocks); for each, print the question, the model's answer, and the top source node's document name, similarity score, and first 200 characters; then a reflection comment. The five `questions` are used as written.
 - **Step 5 — Find a Failure** — a student-chosen hard query, with the full response and all three source nodes printed, and a comment covering what was asked and why, what went wrong, whether the model's tone changed, and what to improve. Query choice is the student's own.
 - **Step 6 — Reflection** — a closing comment block answering the three questions (framework line-count value; a non-coffee-shop use case; a failure mode RAG cannot fully prevent).
