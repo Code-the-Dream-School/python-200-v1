@@ -95,7 +95,7 @@ import pandas as pd
 
         Args:
             days: A list of dictionaries, each with the keys temperature_2m_max, temperature_2m_min,
-                precipitation, and wind_speed_10m_max.
+                precipitation_sum, and wind_speed_10m_max.
 
         Returns:
             One Prediction per input day, in the same order.
