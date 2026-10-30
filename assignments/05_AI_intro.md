@@ -21,7 +21,7 @@ In your `python200-homework` repository, create a folder called `assignments_05/
 
 When finished, commit and open a PR as described in the [assignments README](https://github.com/Code-the-Dream-School/python-200/blob/e072675df8c08073483cf708d18e28916635a203/assignments/README.md).
 
-**API key reminder**: CTD provided your OpenAI API key via Slack. Store it in a `.env` file at the root of your project — **never commit it to GitHub.** Your `.env` file should look like this:
+**API key reminder**: CTD provides your OpenAI API key via Learns App. To locate those details, go to the drop down at the top of your lesson page, expand the "General Information" section and select the "Open API Key" page. Store it in a `.env` file at the root of your project — **never commit it to GitHub.** Your `.env` file should look like this:
 
 ```
 OPENAI_API_KEY=your-key-here
